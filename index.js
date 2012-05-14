@@ -19,6 +19,7 @@ module.exports = function (grunt) {
   var crypto = require('crypto');
   var fs = require('fs');
   var path = require('path');
+  var url = require('url');
 
   // Npm.
   var knox = require('knox');
@@ -36,10 +37,12 @@ module.exports = function (grunt) {
    * Success/error messages.
    */
 
-  const MSG_SUCCESS = 'Uploaded: %s to: {%s}/%s (%s)';
+  const MSG_UPLOAD_SUCCESS = '✓ Uploaded: %s (%s)';
+  const MSG_DOWNLOAD_SUCCESS = '✓ Downloaded: %s (%s)';
 
   const MSG_ERR_NOT_FOUND = 'File not found: %s';
   const MSG_ERR_UPLOAD = 'Upload error: %s';
+  const MSG_ERR_DOWNLOAD = 'Download error: %s';
   const MSG_ERR_CHECKSUM = 'Expected remote hash: %s but found %s';
   const MSG_ERR_VERIFY = 'Unable to verify upload: %s => %s';
 
@@ -48,7 +51,7 @@ module.exports = function (grunt) {
    * are identical to those of util.format.
    */
   function makeError () {
-    var msg = util.format.apply( util, Array.prototype.slice.call(arguments, 0) );
+    var msg = util.format.apply(util, _.toArray(arguments));
     return new Error(msg);
   }
 
@@ -60,11 +63,68 @@ module.exports = function (grunt) {
   }
 
   /**
-   * TODO: Create a generic task (probably a multiTask) that can upload/download
-   * a collection of files to/from s3.
+   * Transfer files to/from s3.
    */
   grunt.registerTask('s3', 'Publishes files to s3.', function () {
+    var done = this.async();
+    var config = _.defaults(grunt.config('s3') || {}, {
+      upload: [],
+      download: []
+    });
 
+    var transfers = [];
+
+    config.upload.forEach(function(upload) {
+      // Expand list of files to download.
+      var files = grunt.file.expandFiles(upload.src);
+
+      files.forEach(function(file) {
+        // If there is only 1 file and it matches the original file wildcard,
+        // we know this is a single file transfer. Otherwise, we need to build
+        // the destination.
+        var dest = (files.length === 1 && file === upload.src)
+          ? upload.dest
+          : path.join(upload.dest, path.basename(file));
+
+        transfers.push(grunt.helper('s3.put', file, dest, upload));
+      });
+    });
+
+    config.download.forEach(function(download) {
+      // Expand list of files to upload.
+      var files = grunt.file.expandFiles(download.src);
+
+      files.forEach(function(file) {
+        // If there is only 1 file and it matches the original file wildcard,
+        // we know this is a single file transfer. Otherwise, we need to build
+        // the destination.
+        var dest = (files.length === 1 && file === download.src)
+          ? download.dest
+          : path.join(download.dest, path.basename(file));
+
+        transfers.push(grunt.helper('s3.pull', file, dest, download));
+      });
+    });
+
+    var total = transfers.length;
+    var errors = 0;
+
+    transfers.forEach(function(transfer) {
+      transfer.done(function(msg) {
+        log.ok(msg);
+      });
+
+      transfer.fail(function(msg) {
+        log.error(msg);
+        ++errors;
+      });
+
+      transfer.always(function() {
+        if (--total === 0) {
+          done(!errors);
+        }
+      });
+    });
   });
 
   /**
@@ -73,76 +133,51 @@ module.exports = function (grunt) {
    * Verifies that the upload was successful by downloading the file and comparing
    * an md5 checksum of the local and remote versions.
    */
-  grunt.registerHelper('s3.put', function (src, dest, headers) {
+  grunt.registerHelper('s3.put', function (src, dest, options) {
     var dfd = new _.Deferred();
-    var config = grunt.config('s3');
+    var config = _.defaults(grunt.config('s3') || {}, {
+      key: '',
+      secret: '',
+      bucket: options.bucket
+    });
 
-    // We'll create a function to download/verify the file for each endpoint
-    // that has been configured.
-    var requests = [];
+    var headers = options.headers || {};
+
+    if (options.access) {
+      headers['x-amz-acl'] = options.access;
+    }
 
     var localHash = crypto.createHash('md5');
     var remoteHash;
 
     // Make sure the local file exists.
-    if ( !path.existsSync(src) ) {
-      return dfd.reject( makeError(MSG_ERR_NOT_FOUND, src) );
+    if (!path.existsSync(src)) {
+      return dfd.reject(makeError(MSG_ERR_NOT_FOUND, src));
     }
 
-    headers = headers || {};
-
     // Get an md5 of the file so we can verify the uploads.
-    localHash = localHash.update( grunt.file.read(src, 'utf8') ).digest('hex');
+    localHash = localHash.update(grunt.file.read(src)).digest('hex');
 
-    config.endpoints.forEach(function (endpoint) {
-      requests.push(function (cb) {
-        // Create a new s3 client using the current endpoint.
-        var client = knox.createClient( _.extend({endpoint : endpoint}, config) );
+    // Create a new s3 client using the current endpoint.
+    var client = knox.createClient(config);
 
-        // Upload the file to this endpoint.
-        client.putFile(src, dest, headers, function (err, res) {
-          // If there was an upload error any status other than a 200, we
-          // can assume something went wrong.
-          if (err || res.statusCode !== 200) {
-            return cb(makeError(MSG_ERR_UPLOAD, res.statusCode), null);
-          }
+    // Upload the file to this endpoint.
+    client.putFile(src, dest, headers, function (err, res) {
+      // If there was an upload error any status other than a 200, we
+      // can assume something went wrong.
+      if (err || res.statusCode !== 200) {
+        return dfd.reject(makeError(MSG_ERR_UPLOAD, res.statusCode));
+      }
 
-          // The etag has double quotes around it. Strip them out.
-          // NOTE: Currently, AmazonS3 returns the file's MD5 in the
-          // ETag header. This could possibley change, but isn't likely.
-          remoteHash = res.headers.etag.replace(/"/g, '');
+      // The etag has double quotes around it. Strip them out.
+      remoteHash = res.headers.etag.replace(/"/g, '');
 
-          if (remoteHash === localHash) {
-            log.ok('Verified local:' + localHash + ' ✓ s3:' + remoteHash);
-            cb(null, endpoint);
-          }
-          else {
-            cb(makeError(MSG_ERR_CHECKSUM, localHash, remoteHash), null);
-          }
-        });
-      });
-    });
-
-    async.parallel(requests, function (err, res) {
-      // A bug in async means err/res aren't always arrays.
-      var result = err ? makeArray(err) : makeArray(res);
-
-      if (err) {
-        // Log all the errors we encountered and return the array of
-        // errors.
-        result.forEach(function (error) {
-          log.error( error.toString() );
-        });
-
-        dfd.reject(result);
+      if (remoteHash === localHash) {
+        var msg = util.format(MSG_UPLOAD_SUCCESS, src, localHash);
+        dfd.resolve(msg);
       }
       else {
-        // Log a success message for each successful upload.
-        result.forEach(function (endpoint) {
-          log.ok( util.format('Uploaded: %s to: %s/%s', src, endpoint, dest) );
-        });
-
-        dfd.resolve(result);
+        dfd.reject(makeError(MSG_ERR_CHECKSUM, localHash, remoteHash));
       }
     });
 
@@ -152,32 +187,52 @@ module.exports = function (grunt) {
   /**
    * Similar to s3.put but, you know, the other way.
    */
-  grunt.registerHelper('s3.pull', function (src, dest) {
-
-  });
-
-  grunt.registerHelper('s3.putDir', function (src, dest) {
+  grunt.registerHelper('s3.pull', function (src, dest, options) {
     var dfd = new _.Deferred();
-    var requests = [];
 
-    fs.readdir(src, function (err, files) {
-      if (err) {
-        dfd.reject(err);
-      }
-      else {
-        files.forEach(function(file) {
-          var fileSrc = path.join(src, file);
-          var fileDest = path.join(dest, file);
-          requests.push( grunt.helper('s3.put', fileSrc, fileDest) );
-        });
+    var config = _.defaults(grunt.config('s3') || {}, {
+      key: '',
+      secret: '',
+      bucket: options.bucket
+    });
 
-        _.when.apply(null, requests)
-        .done(function() {
-          dfd.resolve();
-        }).fail(function(err) {
-          dfd.reject(err);
-        });
+    // Create a local stream we can write the downloaded file to.
+    var file = fs.createWriteStream(dest);
+
+    // We'll want to verify the download once it's finished.
+    var localHash = crypto.createHash('md5');
+
+    // Create a new s3 client using the current endpoint.
+    var client = knox.createClient(config);
+
+    // Upload the file to this endpoint.
+    client.getFile(src, function (err, res) {
+
+      // If there was an upload error any status other than a 200, we
+      // can assume something went wrong.
+      if (err || res.statusCode !== 200) {
+        return dfd.reject(makeError(MSG_ERR_DOWNLOAD, res.statusCode));
       }
+
+      res
+        .on('data', function (chunk) {
+          file.write(chunk);
+        })
+        .on('end', function () {
+          file.end();
+
+          // The etag has double quotes around it. Strip them out.
+          var remoteHash = res.headers.etag.replace(/"/g, '');
+          localHash = localHash.update(grunt.file.read(dest)).digest('hex');
+
+          if (remoteHash === localHash) {
+            var msg = util.format(MSG_DOWNLOAD_SUCCESS, src, localHash);
+            dfd.resolve(msg);
+          }
+          else {
+            dfd.reject(makeError(MSG_ERR_CHECKSUM, localHash, remoteHash));
+          }
+        });
     });
 
     return dfd;
