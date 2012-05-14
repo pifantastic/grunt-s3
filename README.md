@@ -51,13 +51,12 @@ Here is an example grunt.js configuration showing you all possible configuration
         // Files to be downloaded.
         download: [
           {
-            src: 'report.pdf',
-            dest: 'Reports/report.pdf'
+            src: 'documents/important.txt',
+            dest: 'important_document_download.txt'
           },
           {
-            bucket: 'my-super-secret-bucket',
-            src: 'battle_plan.txt',
-            dest: '/tmp/battle_plan.txt'
+            src: 'garbage/IGNORE.txt',
+            dest: 'passwords_download.txt'
           }
         ]
       }
