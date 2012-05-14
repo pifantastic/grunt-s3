@@ -25,7 +25,7 @@
     "node": ">= 0.6.0"
   },
   "keywords": [
-    "grunt",
+    "gruntplugin",
     "amazon",
     "s3"
   ],
