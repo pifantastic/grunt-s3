@@ -123,20 +123,16 @@ module.exports = function (grunt) {
    */
   grunt.registerHelper('s3.put', function (src, dest, options) {
     var dfd = new _.Deferred();
-    var config = _.defaults(grunt.config('s3') || {}, {
-      key: '',
-      secret: '',
-      bucket: options.bucket
-    });
+    var config = _.defaults(options, grunt.config('s3') || {});
 
     var headers = options.headers || {};
+
+    var localHash = crypto.createHash('md5');
+    var remoteHash;
 
     if (options.access) {
       headers['x-amz-acl'] = options.access;
     }
-
-    var localHash = crypto.createHash('md5');
-    var remoteHash;
 
     // Make sure the local file exists.
     if (!path.existsSync(src)) {
@@ -178,11 +174,7 @@ module.exports = function (grunt) {
   grunt.registerHelper('s3.pull', function (src, dest, options) {
     var dfd = new _.Deferred();
 
-    var config = _.defaults(grunt.config('s3') || {}, {
-      key: '',
-      secret: '',
-      bucket: options.bucket
-    });
+    var config = _.defaults(options, grunt.config('s3') || {});
 
     // Create a local stream we can write the downloaded file to.
     var file = fs.createWriteStream(dest);
