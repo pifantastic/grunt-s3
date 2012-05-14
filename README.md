@@ -12,7 +12,14 @@ Amazon S3 is a great tool for storing/serving data. Thus, there is a chance it i
 
 ### Configuration
 
-Here is an example grunt.js configuration showing you all possible configuration.
+* **key** - An Amazon S3 credentials key
+* **secret** - An Amazon S3 credentials secret
+* **bucket** - An Amazon S3 bucket
+* **headers** - An object containing any headers you would like to send along with the transfers.
+* **access** - A specific Amazon S3 ACL. Available values: `private`, `public-read`, `public-read-write`,
+`authenticated-read`, `bucket-owner-read`, `bucket-owner-full-control`
+
+#### Example
 
 ```javascript
 grunt.initConfig({
