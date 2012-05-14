@@ -1,18 +1,18 @@
 # Grunt + Amazon S3
 
-### About
+## About
 
 Amazon S3 is a great tool for storing/serving data. Thus, there is a chance it is part of your build
 process. This task can help you automate uploading/downloading files to/from Amazon S3. All file
 transfers are verified and will produce errors if incomplete.
 
-### Dependencies
+## Dependencies
 
 * knox
 * async
 * underscore.deferred
 
-### Configuration
+## Configuration
 
 * **key** - (*string*) An Amazon S3 credentials key
 * **secret** - (*string*) An Amazon S3 credentials secret
@@ -26,7 +26,7 @@ and a `dest`. Any of the above values may also be overriden.
 * **download** - (*array*) An array of objects, each object representing a file download and containing a
 `src` and a `dest`. Any of the above values may also be overriden.
 
-#### Example
+### Example
 
 ```javascript
 grunt.initConfig({
@@ -90,9 +90,9 @@ Running `grunt s3` using the above config produces the following output:
 
     Done, without errors.
 
-### Helpers
+## Helpers
 
-#### grunt.helper(s3.put, src, dest, options)
+### grunt.helper(s3.put, src, dest, options)
 
 Upload a file to s3. Returns a Promises/J-style Deferred object.
 
@@ -111,7 +111,7 @@ any values specified in the main config.
 * **access** - A specific Amazon S3 ACL. Available values: `private`, `public-read`, `public-read-write`,
 `authenticated-read`, `bucket-owner-read`, `bucket-owner-full-control`
 
-#### grunt.helper(s3.pull, src, dest, options)
+### grunt.helper(s3.pull, src, dest, options)
 
 Download a file from s3. Returns a Promises/J-style Deferred object.
 
