@@ -100,7 +100,7 @@ any values specified in the main config.
 * **access** - A specific Amazon S3 ACL. Available values: `private`, `public-read`, `public-read-write`,
 `authenticated-read`, `bucket-owner-read`, `bucket-owner-full-control`
 
-#### s3.pull
+#### grunt.helper(s3.pull, src, dest, options)
 
 Download a file from s3.
 
