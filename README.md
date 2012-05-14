@@ -29,11 +29,11 @@ Here is an example grunt.js configuration showing you all possible configuration
         upload: [
           {
             src: 'important_document.txt',
-            dest: 'documents/important.txt',
+            dest: 'documents/important.txt'
           },
           {
             src: 'passwords.txt',
-            dest: 'garbage/IGNORE.txt',
+            dest: 'documents/ignore.txt',
 
             // These values will override the above settings.
             bucket: 'some-specific-bucket',
@@ -41,10 +41,10 @@ Here is an example grunt.js configuration showing you all possible configuration
           },
           {
             // Wildcards are valid.
-            src: 'test/*.txt',
+            src: 'documents/*.txt',
 
             // But if you use wildcards, make sure your destination is a directory.
-            dest: 'test/'
+            dest: 'documents/'
           }
         ],
 
@@ -52,18 +52,27 @@ Here is an example grunt.js configuration showing you all possible configuration
         download: [
           {
             src: 'report.pdf',
-            dest: '/Reports/report.pdf'
+            dest: 'Reports/report.pdf'
           },
           {
             bucket: 'my-super-secret-bucket',
             src: 'battle_plan.txt',
             dest: '/tmp/battle_plan.txt'
-          },
-          {
-            src: 'reports/*.pdf',
-            dest: '/Reports'
           }
         ]
       }
 
     });
+
+Running `grunt s3` using the above config produces the following output:
+
+    $ grunt s3
+    Running "s3" task
+    >> ✓ Downloaded: documents/important.txt (e704f1f4bec2d17f09a0e08fecc6cada)
+    >> ✓ Downloaded: garbage/IGNORE.txt (04f7cb4c893b2700e4fa8787769508e8)
+    >> ✓ Uploaded: documents/document1.txt (04f7cb4c893b2700e4fa8787769508e8)
+    >> ✓ Uploaded: passwords.txt (04f7cb4c893b2700e4fa8787769508e8)
+    >> ✓ Uploaded: important_document.txt (e704f1f4bec2d17f09a0e08fecc6cada)
+    >> ✓ Uploaded: documents/document2.txt (04f7cb4c893b2700e4fa8787769508e8)
+
+    Done, without errors.

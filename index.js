@@ -91,19 +91,7 @@ module.exports = function (grunt) {
     });
 
     config.download.forEach(function(download) {
-      // Expand list of files to upload.
-      var files = grunt.file.expandFiles(download.src);
-
-      files.forEach(function(file) {
-        // If there is only 1 file and it matches the original file wildcard,
-        // we know this is a single file transfer. Otherwise, we need to build
-        // the destination.
-        var dest = (files.length === 1 && file === download.src)
-          ? download.dest
-          : path.join(download.dest, path.basename(file));
-
-        transfers.push(grunt.helper('s3.pull', file, dest, download));
-      });
+      transfers.push(grunt.helper('s3.pull', download.src, download.dest, download));
     });
 
     var total = transfers.length;
