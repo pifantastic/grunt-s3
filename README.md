@@ -2,7 +2,9 @@
 
 ### About
 
-Amazon S3 is a great tool for storing/serving data. Thus, there is a chance it is part of your build process. This task can help you automate uploading/downloading files to/from Amazon S3. All file transfers are verified and will produce errors if incomplete.
+Amazon S3 is a great tool for storing/serving data. Thus, there is a chance it is part of your build
+process. This task can help you automate uploading/downloading files to/from Amazon S3. All file
+transfers are verified and will produce errors if incomplete.
 
 ### Dependencies
 
@@ -12,12 +14,17 @@ Amazon S3 is a great tool for storing/serving data. Thus, there is a chance it i
 
 ### Configuration
 
-* **key** - An Amazon S3 credentials key
-* **secret** - An Amazon S3 credentials secret
-* **bucket** - An Amazon S3 bucket
-* **headers** - An object containing any headers you would like to send along with the transfers.
-* **access** - A specific Amazon S3 ACL. Available values: `private`, `public-read`, `public-read-write`,
-`authenticated-read`, `bucket-owner-read`, `bucket-owner-full-control`
+* **key** - (*string*) An Amazon S3 credentials key
+* **secret** - (*string*) An Amazon S3 credentials secret
+* **bucket** - (*string*) An Amazon S3 bucket
+* **headers** - (*object*) An object containing any headers you would like to send along with the
+transfers i.e. `{ 'X-Awesomeness': 'Out-Of-This-World', 'X-Stuff': 'And Things!' }`
+* **access** - (*string*) A specific Amazon S3 ACL. Available values: `private`, `public-read`, `
+public-read-write`, `authenticated-read`, `bucket-owner-read`, `bucket-owner-full-control`
+* **upload** - (*array*) An array of objects, each object representing a file upload and containing a `src`
+and a `dest`. Any of the above values may also be overriden.
+* **download** - (*array*) An array of objects, each object representing a file download and containing a
+`src` and a `dest`. Any of the above values may also be overriden.
 
 #### Example
 
@@ -28,9 +35,6 @@ grunt.initConfig({
     key: 'YOUR KEY',
     secret: 'YOUR SECRET',
     bucket: 'my-bucket',
-
-    // Available values:
-    // private | public-read | public-read-write | authenticated-read | bucket-owner-read | bucket-owner-full-control
     access: 'public-read',
 
     // Files to be uploaded.
@@ -90,7 +94,7 @@ Running `grunt s3` using the above config produces the following output:
 
 #### grunt.helper(s3.put, src, dest, options)
 
-Upload a file to s3.
+Upload a file to s3. Returns a Promises/J-style Deferred object.
 
 **src** (required) - The path to the file to be uploaded. Accepts wildcards, i.e. `files/*.txt`
 
@@ -109,7 +113,7 @@ any values specified in the main config.
 
 #### grunt.helper(s3.pull, src, dest, options)
 
-Download a file from s3.
+Download a file from s3. Returns a Promises/J-style Deferred object.
 
 **src** (required) - The path on S3 from which the file will be downloaded, relative to the bucket. **Does not accept wildcards**
 
@@ -121,3 +125,4 @@ any values specified in the main config.
 * **key** - An Amazon S3 credentials key
 * **secret** - An Amazon S3 credentials secret
 * **bucket** - An Amazon S3 bucket
+* **headers** - An object containing any headers you would like to send along with the upload.
