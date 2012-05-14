@@ -126,3 +126,21 @@ any values specified in the main config.
 * **secret** - An Amazon S3 credentials secret
 * **bucket** - An Amazon S3 bucket
 * **headers** - An object containing any headers you would like to send along with the upload.
+
+### Examples
+
+```javascript
+var upload = grunt.helper('s3.put', 'dist/my-app-1.0.0.tar.gz, 'archive/my-app-1.0.0.tar.gz');
+
+upload.done(function(msg) {
+  console.log(msg);
+});
+
+upload.fail(function(err) {
+  console.log(err);
+});
+
+upload.always(function() {
+  console.log('dance!');
+});
+```
