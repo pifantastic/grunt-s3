@@ -56,13 +56,6 @@ module.exports = function (grunt) {
   }
 
   /**
-   * Make sure an object is in Array form.
-   */
-  function makeArray (thing) {
-    return _.isArray(thing) ? thing : [thing];
-  }
-
-  /**
    * Transfer files to/from s3.
    */
   grunt.registerTask('s3', 'Publishes files to s3.', function () {
