@@ -24,6 +24,7 @@ module.exports = function (grunt) {
   // Npm.
   var knox = require('knox');
   var async = require('async');
+  var deferred = require('underscore.deferred');
 
   /**
    * Grunt aliases.
@@ -31,7 +32,7 @@ module.exports = function (grunt) {
   var log = grunt.log;
   var _ = grunt.utils._;
 
-  _.mixin(require('underscore.deferred'));
+  _.mixin(deferred);
 
   /**
    * Success/error messages.
@@ -43,12 +44,15 @@ module.exports = function (grunt) {
   const MSG_ERR_NOT_FOUND = 'File not found: %s';
   const MSG_ERR_UPLOAD = 'Upload error: %s';
   const MSG_ERR_DOWNLOAD = 'Download error: %s';
-  const MSG_ERR_CHECKSUM = 'Expected remote hash: %s but found %s';
+  const MSG_ERR_CHECKSUM = 'Expected hash: %s but found %s';
   const MSG_ERR_VERIFY = 'Unable to verify upload: %s => %s';
 
   /**
    * Create an Error object based off of a formatted message. Arguments
    * are identical to those of util.format.
+   *
+   * @param {String} Format.
+   * @param {...string|number} Values to insert into Format.
    */
   function makeError () {
     var msg = util.format.apply(util, _.toArray(arguments));
@@ -57,6 +61,8 @@ module.exports = function (grunt) {
 
   /**
    * Transfer files to/from s3.
+   *
+   * Uses global s3 grunt config.
    */
   grunt.registerTask('s3', 'Publishes files to s3.', function () {
     var done = this.async();
@@ -111,8 +117,14 @@ module.exports = function (grunt) {
   /**
    * Publishes the local file at src to the s3 dest.
    *
-   * Verifies that the upload was successful by downloading the file and comparing
-   * an md5 checksum of the local and remote versions.
+   * Verifies that the upload was successful by comparing an md5 checksum of
+   * the local and remote versions.
+   *
+   * @param {String} src The local path to the file to upload.
+   * @param {String} dest The s3 path, relative to the bucket, to which the src is
+   *     uploaded.
+   * @param {Object} [options] An object containing options which override any option
+   *     declared in the global s3 config.
    */
   grunt.registerHelper('s3.put', function (src, dest, options) {
     var dfd = new _.Deferred();
@@ -162,7 +174,16 @@ module.exports = function (grunt) {
   });
 
   /**
-   * Similar to s3.put but, you know, the other way.
+   * Download a file from s3..
+   *
+   * Verifies that the download was successful by downloading the file and
+   * comparing an md5 checksum of the local and remote versions.
+   *
+   * @param {String} src The s3 path, relative to the bucket, of the file being
+   *     downloaded.
+   * @param {String} dest The local path where the download will be saved.
+   * @param {Object} [options] An object containing options which override any option
+   *     declared in the global s3 config.
    */
   grunt.registerHelper('s3.pull', function (src, dest, options) {
     var dfd = new _.Deferred();
