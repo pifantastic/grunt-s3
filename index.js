@@ -39,14 +39,16 @@ module.exports = function (grunt) {
    * Success/error messages.
    */
 
-  const MSG_UPLOAD_SUCCESS = '✓ Uploaded: %s (%s)';
-  const MSG_DOWNLOAD_SUCCESS = '✓ Downloaded: %s (%s)';
+  const MSG_UPLOAD_SUCCESS = '↗ Uploaded: %s (%s)';
+  const MSG_DOWNLOAD_SUCCESS = '↙ Downloaded: %s (%s)';
+  const MSG_DELETE_SUCCESS = '✗ Deleted: %s (%s)';
 
   const MSG_ERR_NOT_FOUND = 'File not found: %s';
-  const MSG_ERR_UPLOAD = 'Upload error: %s';
-  const MSG_ERR_DOWNLOAD = 'Download error: %s';
-  const MSG_ERR_CHECKSUM = 'Expected hash: %s but found %s';
-  const MSG_ERR_VERIFY = 'Unable to verify upload: %s => %s';
+  const MSG_ERR_UPLOAD = 'Upload error: %s (%s)';
+  const MSG_ERR_DOWNLOAD = 'Download error: %s (%s)';
+  const MSG_ERR_DELETE = 'Delete error: %s (%s)';
+  const MSG_ERR_CHECKSUM = 'Expected hash: %s but found %s for %s';
+  const MSG_ERR_VERIFY = 'Unable to verify upload: %s => %s for %s';
 
   /**
    * Create an Error object based off of a formatted message. Arguments
@@ -69,7 +71,8 @@ module.exports = function (grunt) {
     var done = this.async();
     var config = _.defaults(grunt.config('s3') || {}, {
       upload: [],
-      download: []
+      download: [],
+      del: []
     });
 
     var transfers = [];
@@ -92,6 +95,10 @@ module.exports = function (grunt) {
 
     config.download.forEach(function(download) {
       transfers.push(grunt.helper('s3.pull', download.src, download.dest, download));
+    });
+
+    config.del.forEach(function(del) {
+      transfers.push(grunt.helper('s3.delete', del.src, del));
     });
 
     var total = transfers.length;
@@ -153,12 +160,12 @@ module.exports = function (grunt) {
         // If there was an upload error any status other than a 200, we
         // can assume something went wrong.
         if (err || res.statusCode !== 200) {
-          return dfd.reject(makeError(MSG_ERR_UPLOAD, err || res.statusCode));
+          return dfd.reject(makeError(MSG_ERR_UPLOAD, src, err || res.statusCode));
         }
 
         fs.readFile(src, function (err, data) {
           if (err) {
-            return dfd.reject(makeError(MSG_ERR_UPLOAD, err));
+            return dfd.reject(makeError(MSG_ERR_UPLOAD, src, err));
           }
           else {
             // The etag has double quotes around it. Strip them out.
@@ -197,7 +204,7 @@ module.exports = function (grunt) {
 
       input.pipe(zlib.createGzip()).pipe(output)
         .on('error', function (err) {
-          dfd.reject(makeError(MSG_ERR_UPLOAD, err));
+          dfd.reject(makeError(MSG_ERR_UPLOAD, src, err));
         })
         .on('close', function () {
           src = tmp;
@@ -242,7 +249,7 @@ module.exports = function (grunt) {
       // If there was an upload error any status other than a 200, we
       // can assume something went wrong.
       if (err || res.statusCode !== 200) {
-        return dfd.reject(makeError(MSG_ERR_DOWNLOAD, err || res.statusCode));
+        return dfd.reject(makeError(MSG_ERR_DOWNLOAD, src, err || res.statusCode));
       }
 
       res
@@ -250,14 +257,14 @@ module.exports = function (grunt) {
           file.write(chunk);
         })
         .on('error', function (err) {
-          return dfd.reject(makeError(MSG_ERR_DOWNLOAD, err));
+          return dfd.reject(makeError(MSG_ERR_DOWNLOAD, src, err));
         })
         .on('end', function () {
           file.end();
 
           fs.readFile(dest, function (err, data) {
             if (err) {
-              return dfd.reject(makeError(MSG_ERR_DOWNLOAD, err));
+              return dfd.reject(makeError(MSG_ERR_DOWNLOAD, src, err));
             }
             else {
               // The etag has double quotes around it. Strip them out.
@@ -274,6 +281,28 @@ module.exports = function (grunt) {
             }
           });
         });
+    });
+
+    return dfd;
+  });
+
+  grunt.registerHelper('s3.delete', function (src, options) {
+    var dfd = new _.Deferred();
+    var config = _.defaults(options, grunt.config('s3') || {});
+
+    // Pick out the configuration options we need for the client.
+    var client = knox.createClient(_(config).pick([
+      'endpoint', 'port', 'key', 'secret', 'access', 'bucket'
+    ]));
+
+    // Upload the file to this endpoint.
+    client.deleteFile(src, function (err, res) {
+      if (err || res.statusCode !== 204) {
+        dfd.reject(makeError(MSG_ERR_DELETE, src, err || res.statusCode));
+      }
+      else {
+        dfd.resolve(util.format(MSG_DELETE_SUCCESS, src));
+      }
     });
 
     return dfd;
