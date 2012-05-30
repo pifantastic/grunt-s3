@@ -47,7 +47,6 @@ module.exports = function (grunt) {
   const MSG_ERR_DOWNLOAD = 'Download error: %s (%s)';
   const MSG_ERR_DELETE = 'Delete error: %s (%s)';
   const MSG_ERR_CHECKSUM = 'Expected hash: %s but found %s for %s';
-  const MSG_ERR_VERIFY = 'Unable to verify upload: %s => %s for %s';
 
   /**
    * Create an Error object based off of a formatted message. Arguments
@@ -77,7 +76,7 @@ module.exports = function (grunt) {
     var transfers = [];
 
     config.upload.forEach(function(upload) {
-      // Expand list of files to download.
+      // Expand list of files to upload.
       var files = grunt.file.expandFiles(upload.src);
 
       files.forEach(function(file) {
@@ -103,6 +102,7 @@ module.exports = function (grunt) {
     var total = transfers.length;
     var errors = 0;
 
+    // Keep a running total of errors/completions as the transfers complete.
     transfers.forEach(function(transfer) {
       transfer.done(function(msg) {
         log.ok(msg);
@@ -114,6 +114,7 @@ module.exports = function (grunt) {
       });
 
       transfer.always(function() {
+        // If this was the last transfer to complete, we're all done.
         if (--total === 0) {
           done(!errors);
         }
@@ -128,10 +129,10 @@ module.exports = function (grunt) {
    * the local and remote versions.
    *
    * @param {String} src The local path to the file to upload.
-   * @param {String} dest The s3 path, relative to the bucket, to which the src is
-   *     uploaded.
-   * @param {Object} [options] An object containing options which override any option
-   *     declared in the global s3 config.
+   * @param {String} dest The s3 path, relative to the bucket, to which the src
+   *     is uploaded.
+   * @param {Object} [options] An object containing options which override any
+   *     option declared in the global s3 config.
    */
   grunt.registerHelper('s3.put', function (src, dest, options) {
     var dfd = new _.Deferred();
@@ -153,25 +154,30 @@ module.exports = function (grunt) {
       'endpoint', 'port', 'key', 'secret', 'access', 'bucket'
     ]));
 
+    // Encapsulate this logic to make it easier to gzip the file first if
+    // necesssary.
     function upload(cb) {
       cb = cb || function () {};
 
+      // Upload the file to s3.
       client.putFile(src, dest, headers, function (err, res) {
-        // If there was an upload error any status other than a 200, we
+        // If there was an upload error or any status other than a 200, we
         // can assume something went wrong.
         if (err || res.statusCode !== 200) {
           return dfd.reject(makeError(MSG_ERR_UPLOAD, src, err || res.statusCode));
         }
 
+        // Read the local file so we can get its md5 hash.
         fs.readFile(src, function (err, data) {
           if (err) {
             return dfd.reject(makeError(MSG_ERR_UPLOAD, src, err));
           }
           else {
-            // The etag has double quotes around it. Strip them out.
+            // The etag head in the response from s3 has double quotes around
+            // it. Strip them out.
             var remoteHash = res.headers.etag.replace(/"/g, '');
 
-            // Get an md5 of the file so we can verify the uploads.
+            // Get an md5 of the local file so we can verify the upload.
             var localHash = crypto.createHash('md5').update(data).digest('hex');
 
             if (remoteHash === localHash) {
@@ -179,7 +185,7 @@ module.exports = function (grunt) {
               dfd.resolve(msg);
             }
             else {
-              dfd.reject(makeError(MSG_ERR_CHECKSUM, localHash, remoteHash));
+              dfd.reject(makeError(MSG_ERR_CHECKSUM, localHash, remoteHash, src));
             }
           }
 
@@ -188,11 +194,13 @@ module.exports = function (grunt) {
       });
     }
 
-    // If gzip is enabled, gzip the file into a temp file and then perform the upload.
+    // If gzip is enabled, gzip the file into a temp file and then perform the
+    // upload.
     if (options.gzip) {
       headers['Content-Encoding'] = 'gzip';
       headers['Content-Type'] = mime.lookup(src);
 
+      // Determine a unique temp file name.
       var tmp = src + '.gz';
       var incr = 0;
       while (path.existsSync(tmp)) {
@@ -202,18 +210,22 @@ module.exports = function (grunt) {
       var input = fs.createReadStream(src);
       var output = fs.createWriteStream(tmp);
 
+      // Gzip the file and upload when done.
       input.pipe(zlib.createGzip()).pipe(output)
         .on('error', function (err) {
           dfd.reject(makeError(MSG_ERR_UPLOAD, src, err));
         })
         .on('close', function () {
+          // Update the src to point to the newly created .gz file.
           src = tmp;
           upload(function () {
+            // Clean up the temp file.
             fs.unlinkSync(tmp);
           });
         });
     }
     else {
+      // No need to gzip so go ahead and upload the file.
       upload();
     }
 
@@ -229,8 +241,8 @@ module.exports = function (grunt) {
    * @param {String} src The s3 path, relative to the bucket, of the file being
    *     downloaded.
    * @param {String} dest The local path where the download will be saved.
-   * @param {Object} [options] An object containing options which override any option
-   *     declared in the global s3 config.
+   * @param {Object} [options] An object containing options which override any
+   *     option declared in the global s3 config.
    */
   grunt.registerHelper('s3.pull', function (src, dest, options) {
     var dfd = new _.Deferred();
@@ -244,9 +256,9 @@ module.exports = function (grunt) {
       'endpoint', 'port', 'key', 'secret', 'access', 'bucket'
     ]));
 
-    // Upload the file to this endpoint.
+    // Upload the file to s3.
     client.getFile(src, function (err, res) {
-      // If there was an upload error any status other than a 200, we
+      // If there was an upload error or any status other than a 200, we
       // can assume something went wrong.
       if (err || res.statusCode !== 200) {
         return dfd.reject(makeError(MSG_ERR_DOWNLOAD, src, err || res.statusCode));
@@ -262,13 +274,17 @@ module.exports = function (grunt) {
         .on('end', function () {
           file.end();
 
+          // Read the local file so we can get its md5 hash.
           fs.readFile(dest, function (err, data) {
             if (err) {
               return dfd.reject(makeError(MSG_ERR_DOWNLOAD, src, err));
             }
             else {
-              // The etag has double quotes around it. Strip them out.
+              // The etag head in the response from s3 has double quotes around
+              // it. Strip them out.
               var remoteHash = res.headers.etag.replace(/"/g, '');
+
+              // Get an md5 of the local file so we can verify the download.
               var localHash = crypto.createHash('md5').update(data).digest('hex');
 
               if (remoteHash === localHash) {
@@ -276,7 +292,7 @@ module.exports = function (grunt) {
                 dfd.resolve(msg);
               }
               else {
-                dfd.reject(makeError(MSG_ERR_CHECKSUM, localHash, remoteHash));
+                dfd.reject(makeError(MSG_ERR_CHECKSUM, localHash, remoteHash, src));
               }
             }
           });
@@ -289,9 +305,10 @@ module.exports = function (grunt) {
   /**
    * Delete a file from s3.
    *
-   * @param {String} src The s3 path, relative to the bucket, to the file to delete.
-   * @param {Object} [options] An object containing options which override any option
-   *     declared in the global s3 config.
+   * @param {String} src The s3 path, relative to the bucket, to the file to
+   *     delete.
+   * @param {Object} [options] An object containing options which override any
+   *     option declared in the global s3 config.
    */
   grunt.registerHelper('s3.delete', function (src, options) {
     var dfd = new _.Deferred();
