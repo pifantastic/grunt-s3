@@ -40,7 +40,7 @@ module.exports = function (grunt) {
    */
   const MSG_UPLOAD_SUCCESS = '↗ Uploaded: %s (%s)';
   const MSG_DOWNLOAD_SUCCESS = '↙ Downloaded: %s (%s)';
-  const MSG_DELETE_SUCCESS = '✗ Deleted: %s (%s)';
+  const MSG_DELETE_SUCCESS = '✗ Deleted: %s';
 
   const MSG_ERR_NOT_FOUND = '¯\_(ツ)_/¯ File not found: %s';
   const MSG_ERR_UPLOAD = 'Upload error: %s (%s)';
@@ -286,6 +286,13 @@ module.exports = function (grunt) {
     return dfd;
   });
 
+  /**
+   * Delete a file from s3.
+   *
+   * @param {String} src The s3 path, relative to the bucket, to the file to delete.
+   * @param {Object} [options] An object containing options which override any option
+   *     declared in the global s3 config.
+   */
   grunt.registerHelper('s3.delete', function (src, options) {
     var dfd = new _.Deferred();
     var config = _.defaults(options, grunt.config('s3') || {});

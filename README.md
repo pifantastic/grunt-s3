@@ -71,6 +71,15 @@ grunt.initConfig({
         src: 'garbage/IGNORE.txt',
         dest: 'passwords_download.txt'
       }
+    ],
+
+    del: [
+      {
+        src: 'documents/launch_codes.txt'
+      },
+      {
+        src: 'documents/backup_plan.txt'
+      }
     ]
   }
 
@@ -81,13 +90,14 @@ Running `grunt s3` using the above config produces the following output:
 
     $ grunt s3
     Running "s3" task
-    >> ✓ Downloaded: documents/important.txt (e704f1f4bec2d17f09a0e08fecc6cada)
-    >> ✓ Downloaded: garbage/IGNORE.txt (04f7cb4c893b2700e4fa8787769508e8)
-    >> ✓ Uploaded: documents/document1.txt (04f7cb4c893b2700e4fa8787769508e8)
-    >> ✓ Uploaded: passwords.txt (04f7cb4c893b2700e4fa8787769508e8)
-    >> ✓ Uploaded: important_document.txt (e704f1f4bec2d17f09a0e08fecc6cada)
-    >> ✓ Uploaded: documents/document2.txt (04f7cb4c893b2700e4fa8787769508e8)
-
+    >> ↙ Downloaded: documents/important.txt (e704f1f4bec2d17f09a0e08fecc6cada)
+    >> ↙ Downloaded: garbage/IGNORE.txt (04f7cb4c893b2700e4fa8787769508e8)
+    >> ↗ Uploaded: documents/document1.txt (04f7cb4c893b2700e4fa8787769508e8)
+    >> ↗ Uploaded: passwords.txt (04f7cb4c893b2700e4fa8787769508e8)
+    >> ↗ Uploaded: important_document.txt (e704f1f4bec2d17f09a0e08fecc6cada)
+    >> ↗ Uploaded: documents/document2.txt (04f7cb4c893b2700e4fa8787769508e8)
+    >> ✗ Deleted: documents/launch_codes.txt
+    >> ✗ Deleted: documents/backup_plan.txt
     Done, without errors.
 
 ## Helpers
@@ -118,6 +128,20 @@ Download a file from s3. Returns a Promises/J-style Deferred object.
 **src** (required) - The path on S3 from which the file will be downloaded, relative to the bucket. **Does not accept wildcards**
 
 **dest** (required) - The local path where the file will be saved.
+
+**options** (optional) - An object containing any of the following values. These values override
+any values specified in the main config.
+
+* **key** - An Amazon S3 credentials key
+* **secret** - An Amazon S3 credentials secret
+* **bucket** - An Amazon S3 bucket
+* **headers** - An object containing any headers you would like to send along with the upload.
+
+### grunt.helper(s3.delete, src, options)
+
+Delete a file from s3. Returns a Promises/J-style Deferred object.
+
+**src** (required) - The path on S3 of the file to delete, relative to the bucket. **Does not accept wildcards**
 
 **options** (optional) - An object containing any of the following values. These values override
 any values specified in the main config.
