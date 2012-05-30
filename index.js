@@ -38,12 +38,11 @@ module.exports = function (grunt) {
   /**
    * Success/error messages.
    */
-
   const MSG_UPLOAD_SUCCESS = '↗ Uploaded: %s (%s)';
   const MSG_DOWNLOAD_SUCCESS = '↙ Downloaded: %s (%s)';
   const MSG_DELETE_SUCCESS = '✗ Deleted: %s (%s)';
 
-  const MSG_ERR_NOT_FOUND = 'File not found: %s';
+  const MSG_ERR_NOT_FOUND = '¯\_(ツ)_/¯ File not found: %s';
   const MSG_ERR_UPLOAD = 'Upload error: %s (%s)';
   const MSG_ERR_DOWNLOAD = 'Download error: %s (%s)';
   const MSG_ERR_DELETE = 'Delete error: %s (%s)';
@@ -135,12 +134,13 @@ module.exports = function (grunt) {
    *     declared in the global s3 config.
    */
   grunt.registerHelper('s3.put', function (src, dest, options) {
+    var dfd = new _.Deferred();
+
     // Make sure the local file exists.
     if (!path.existsSync(src)) {
       return dfd.reject(makeError(MSG_ERR_NOT_FOUND, src));
     }
 
-    var dfd = new _.Deferred();
     var config = _.defaults(options, grunt.config('s3') || {});
     var headers = options.headers || {};
 
