@@ -15,24 +15,25 @@ module.exports = function (grunt) {
    */
 
   // Core.
-  var util = require('util');
-  var crypto = require('crypto');
-  var fs = require('fs');
-  var path = require('path');
-  var url = require('url');
+  const util = require('util');
+  const crypto = require('crypto');
+  const fs = require('fs');
+  const path = require('path');
+  const url = require('url');
+  const zlib = require('zlib');
 
   // Npm.
-  var knox = require('knox');
-  var async = require('async');
-  var deferred = require('underscore.deferred');
+  const knox = require('knox');
+  const mime = require('mime');
+  const async = require('async');
+  const _ = require('underscore');
+  const deferred = require('underscore.deferred');
+  _.mixin(deferred);
 
   /**
    * Grunt aliases.
    */
   var log = grunt.log;
-  var _ = grunt.utils._;
-
-  _.mixin(deferred);
 
   /**
    * Success/error messages.
@@ -127,54 +128,93 @@ module.exports = function (grunt) {
    *     declared in the global s3 config.
    */
   grunt.registerHelper('s3.put', function (src, dest, options) {
-    var dfd = new _.Deferred();
-    var config = _.defaults(options, grunt.config('s3') || {});
-
-    var headers = options.headers || {};
-
-    var localHash = crypto.createHash('md5');
-    var remoteHash;
-
-    if (options.access) {
-      headers['x-amz-acl'] = options.access;
-    }
-
     // Make sure the local file exists.
     if (!path.existsSync(src)) {
       return dfd.reject(makeError(MSG_ERR_NOT_FOUND, src));
     }
 
-    // Get an md5 of the file so we can verify the uploads.
-    localHash = localHash.update(grunt.file.read(src)).digest('hex');
+    var dfd = new _.Deferred();
+    var config = _.defaults(options, grunt.config('s3') || {});
+    var headers = options.headers || {};
 
-    // Create a new s3 client using the current endpoint.
-    var client = knox.createClient(config);
+    if (options.access) {
+      headers['x-amz-acl'] = options.access;
+    }
 
-    // Upload the file to this endpoint.
-    client.putFile(src, dest, headers, function (err, res) {
-      // If there was an upload error any status other than a 200, we
-      // can assume something went wrong.
-      if (err || res.statusCode !== 200) {
-        return dfd.reject(makeError(MSG_ERR_UPLOAD, res.statusCode));
+    // Pick out the configuration options we need for the client.
+    var client = knox.createClient(_(config).pick([
+      'endpoint', 'port', 'key', 'secret', 'access', 'bucket'
+    ]));
+
+    function upload(cb) {
+      cb = cb || function () {};
+
+      client.putFile(src, dest, headers, function (err, res) {
+        // If there was an upload error any status other than a 200, we
+        // can assume something went wrong.
+        if (err || res.statusCode !== 200) {
+          return dfd.reject(makeError(MSG_ERR_UPLOAD, err || res.statusCode));
+        }
+
+        fs.readFile(src, function (err, data) {
+          if (err) {
+            return dfd.reject(makeError(MSG_ERR_UPLOAD, err));
+          }
+          else {
+            // The etag has double quotes around it. Strip them out.
+            var remoteHash = res.headers.etag.replace(/"/g, '');
+
+            // Get an md5 of the file so we can verify the uploads.
+            var localHash = crypto.createHash('md5').update(data).digest('hex');
+
+            if (remoteHash === localHash) {
+              var msg = util.format(MSG_UPLOAD_SUCCESS, src, localHash);
+              dfd.resolve(msg);
+            }
+            else {
+              dfd.reject(makeError(MSG_ERR_CHECKSUM, localHash, remoteHash));
+            }
+          }
+
+          cb(err);
+        });
+      });
+    }
+
+    // If gzip is enabled, gzip the file into a temp file and then perform the upload.
+    if (options.gzip) {
+      headers['Content-Encoding'] = 'gzip';
+      headers['Content-Type'] = mime.lookup(src);
+
+      var tmp = src + '.gz';
+      var incr = 0;
+      while (path.existsSync(tmp)) {
+        tmp = src + '.' + (incr++) + '.gz';
       }
 
-      // The etag has double quotes around it. Strip them out.
-      remoteHash = res.headers.etag.replace(/"/g, '');
+      var input = fs.createReadStream(src);
+      var output = fs.createWriteStream(tmp);
 
-      if (remoteHash === localHash) {
-        var msg = util.format(MSG_UPLOAD_SUCCESS, src, localHash);
-        dfd.resolve(msg);
-      }
-      else {
-        dfd.reject(makeError(MSG_ERR_CHECKSUM, localHash, remoteHash));
-      }
-    });
+      input.pipe(zlib.createGzip()).pipe(output)
+        .on('error', function (err) {
+          dfd.reject(makeError(MSG_ERR_UPLOAD, err));
+        })
+        .on('close', function () {
+          src = tmp;
+          upload(function () {
+            fs.unlinkSync(tmp);
+          });
+        });
+    }
+    else {
+      upload();
+    }
 
     return dfd;
   });
 
   /**
-   * Download a file from s3..
+   * Download a file from s3.
    *
    * Verifies that the download was successful by downloading the file and
    * comparing an md5 checksum of the local and remote versions.
@@ -187,45 +227,52 @@ module.exports = function (grunt) {
    */
   grunt.registerHelper('s3.pull', function (src, dest, options) {
     var dfd = new _.Deferred();
-
     var config = _.defaults(options, grunt.config('s3') || {});
 
     // Create a local stream we can write the downloaded file to.
     var file = fs.createWriteStream(dest);
 
-    // We'll want to verify the download once it's finished.
-    var localHash = crypto.createHash('md5');
-
-    // Create a new s3 client using the current endpoint.
-    var client = knox.createClient(config);
+    // Pick out the configuration options we need for the client.
+    var client = knox.createClient(_(config).pick([
+      'endpoint', 'port', 'key', 'secret', 'access', 'bucket'
+    ]));
 
     // Upload the file to this endpoint.
     client.getFile(src, function (err, res) {
-
       // If there was an upload error any status other than a 200, we
       // can assume something went wrong.
       if (err || res.statusCode !== 200) {
-        return dfd.reject(makeError(MSG_ERR_DOWNLOAD, res.statusCode));
+        return dfd.reject(makeError(MSG_ERR_DOWNLOAD, err || res.statusCode));
       }
 
       res
         .on('data', function (chunk) {
           file.write(chunk);
         })
+        .on('error', function (err) {
+          return dfd.reject(makeError(MSG_ERR_DOWNLOAD, err));
+        })
         .on('end', function () {
           file.end();
 
-          // The etag has double quotes around it. Strip them out.
-          var remoteHash = res.headers.etag.replace(/"/g, '');
-          localHash = localHash.update(grunt.file.read(dest)).digest('hex');
+          fs.readFile(dest, function (err, data) {
+            if (err) {
+              return dfd.reject(makeError(MSG_ERR_DOWNLOAD, err));
+            }
+            else {
+              // The etag has double quotes around it. Strip them out.
+              var remoteHash = res.headers.etag.replace(/"/g, '');
+              var localHash = crypto.createHash('md5').update(data).digest('hex');
 
-          if (remoteHash === localHash) {
-            var msg = util.format(MSG_DOWNLOAD_SUCCESS, src, localHash);
-            dfd.resolve(msg);
-          }
-          else {
-            dfd.reject(makeError(MSG_ERR_CHECKSUM, localHash, remoteHash));
-          }
+              if (remoteHash === localHash) {
+                var msg = util.format(MSG_DOWNLOAD_SUCCESS, src, localHash);
+                dfd.resolve(msg);
+              }
+              else {
+                dfd.reject(makeError(MSG_ERR_CHECKSUM, localHash, remoteHash));
+              }
+            }
+          });
         });
     });
 
