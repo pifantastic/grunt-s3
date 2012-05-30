@@ -38,9 +38,9 @@ module.exports = function (grunt) {
   /**
    * Success/error messages.
    */
-  const MSG_UPLOAD_SUCCESS = '↗ Uploaded: %s (%s)';
-  const MSG_DOWNLOAD_SUCCESS = '↙ Downloaded: %s (%s)';
-  const MSG_DELETE_SUCCESS = '✗ Deleted: %s';
+  const MSG_UPLOAD_SUCCESS = '↗'.blue + ' Uploaded: %s (%s)';
+  const MSG_DOWNLOAD_SUCCESS = '↙'.yellow + ' Downloaded: %s (%s)';
+  const MSG_DELETE_SUCCESS = '✗'.red + ' Deleted: %s';
 
   const MSG_ERR_NOT_FOUND = '¯\_(ツ)_/¯ File not found: %s';
   const MSG_ERR_UPLOAD = 'Upload error: %s (%s)';
