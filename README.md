@@ -9,7 +9,9 @@ transfers are verified and will produce errors if incomplete.
 ## Dependencies
 
 * knox
+* mime
 * async
+* underscore
 * underscore.deferred
 
 ## Configuration
