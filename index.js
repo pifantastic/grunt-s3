@@ -164,33 +164,32 @@ module.exports = function (grunt) {
         // If there was an upload error or any status other than a 200, we
         // can assume something went wrong.
         if (err || res.statusCode !== 200) {
-          return dfd.reject(makeError(MSG_ERR_UPLOAD, src, err || res.statusCode));
+          cb(makeError(MSG_ERR_UPLOAD, src, err || res.statusCode));
         }
-
-        // Read the local file so we can get its md5 hash.
-        fs.readFile(src, function (err, data) {
-          if (err) {
-            return dfd.reject(makeError(MSG_ERR_UPLOAD, src, err));
-          }
-          else {
-            // The etag head in the response from s3 has double quotes around
-            // it. Strip them out.
-            var remoteHash = res.headers.etag.replace(/"/g, '');
-
-            // Get an md5 of the local file so we can verify the upload.
-            var localHash = crypto.createHash('md5').update(data).digest('hex');
-
-            if (remoteHash === localHash) {
-              var msg = util.format(MSG_UPLOAD_SUCCESS, src, localHash);
-              dfd.resolve(msg);
+        else {
+          // Read the local file so we can get its md5 hash.
+          fs.readFile(src, function (err, data) {
+            if (err) {
+              cb(makeError(MSG_ERR_UPLOAD, src, err));
             }
             else {
-              dfd.reject(makeError(MSG_ERR_CHECKSUM, localHash, remoteHash, src));
-            }
-          }
+              // The etag head in the response from s3 has double quotes around
+              // it. Strip them out.
+              var remoteHash = res.headers.etag.replace(/"/g, '');
 
-          cb(err);
-        });
+              // Get an md5 of the local file so we can verify the upload.
+              var localHash = crypto.createHash('md5').update(data).digest('hex');
+
+              if (remoteHash === localHash) {
+                var msg = util.format(MSG_UPLOAD_SUCCESS, src, localHash);
+                cb(null, msg);
+              }
+              else {
+                cb(makeError(MSG_ERR_CHECKSUM, localHash, remoteHash, src));
+              }
+            }
+          });
+        }
       });
     }
 
@@ -218,15 +217,29 @@ module.exports = function (grunt) {
         .on('close', function () {
           // Update the src to point to the newly created .gz file.
           src = tmp;
-          upload(function () {
+          upload(function (err, msg) {
             // Clean up the temp file.
             fs.unlinkSync(tmp);
+
+            if (err) {
+              dfd.reject(err);
+            }
+            else {
+              dfd.resolve(msg);
+            }
           });
         });
     }
     else {
       // No need to gzip so go ahead and upload the file.
-      upload();
+      upload(function (err, msg) {
+        if (err) {
+          dfd.reject(err);
+        }
+        else {
+          dfd.resolve(msg);
+        }
+      });
     }
 
     return dfd;
