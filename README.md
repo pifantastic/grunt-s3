@@ -23,10 +23,13 @@ transfers are verified and will produce errors if incomplete.
 transfers i.e. `{ 'X-Awesomeness': 'Out-Of-This-World', 'X-Stuff': 'And Things!' }`
 * **access** - (*string*) A specific Amazon S3 ACL. Available values: `private`, `public-read`, `
 public-read-write`, `authenticated-read`, `bucket-owner-read`, `bucket-owner-full-control`
+* **gzip** - (*boolean*) If true, uploads will be gzip-encoded.
 * **upload** - (*array*) An array of objects, each object representing a file upload and containing a `src`
 and a `dest`. Any of the above values may also be overriden.
 * **download** - (*array*) An array of objects, each object representing a file download and containing a
 `src` and a `dest`. Any of the above values may also be overriden.
+* **del** - (*array*) An array of objects, each object containing a `src` to delete from s3. Any of
+the above values may also be overriden.
 
 ### Example
 
@@ -43,7 +46,8 @@ grunt.initConfig({
     upload: [
       {
         src: 'important_document.txt',
-        dest: 'documents/important.txt'
+        dest: 'documents/important.txt',
+        gzip: true
       },
       {
         src: 'passwords.txt',
@@ -104,7 +108,7 @@ Running `grunt s3` using the above config produces the following output:
 
 ## Helpers
 
-### grunt.helper(s3.put, src, dest, options)
+### grunt.helper('s3.put', src, dest, options)
 
 Upload a file to s3. Returns a Promises/J-style Deferred object.
 
@@ -122,8 +126,9 @@ any values specified in the main config.
 * **headers** - An object containing any headers you would like to send along with the upload.
 * **access** - A specific Amazon S3 ACL. Available values: `private`, `public-read`, `public-read-write`,
 `authenticated-read`, `bucket-owner-read`, `bucket-owner-full-control`
+* **gzip** - (*boolean*) If true, uploads will be gzip-encoded.
 
-### grunt.helper(s3.pull, src, dest, options)
+### grunt.helper('s3.pull', src, dest, options)
 
 Download a file from s3. Returns a Promises/J-style Deferred object.
 
@@ -139,7 +144,7 @@ any values specified in the main config.
 * **bucket** - An Amazon S3 bucket
 * **headers** - An object containing any headers you would like to send along with the upload.
 
-### grunt.helper(s3.delete, src, options)
+### grunt.helper('s3.delete', src, options)
 
 Delete a file from s3. Returns a Promises/J-style Deferred object.
 
@@ -158,15 +163,21 @@ any values specified in the main config.
 ```javascript
 var upload = grunt.helper('s3.put', 'dist/my-app-1.0.0.tar.gz', 'archive/my-app-1.0.0.tar.gz');
 
-upload.done(function(msg) {
-  console.log(msg);
+upload
+  .done(function(msg) {
+    console.log(msg);
+  })
+  .fail(function(err) {
+    console.log(err);
+  })
+  .always(function() {
+    console.log('dance!');
+  });
+
+var download = grunt.helper('s3.pull', 'dist/my-app-0.9.9.tar.gz', 'local/my-app-0.9.9.tar.gz');
+
+download.done(function() {
+  grunt.helper('s3.delete', 'dist/my-app-0.9.9.tar.gz');
 });
 
-upload.fail(function(err) {
-  console.log(err);
-});
-
-upload.always(function() {
-  console.log('dance!');
-});
 ```
