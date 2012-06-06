@@ -349,7 +349,8 @@ module.exports = function (grunt) {
     req.on('response', function (res) {
       if (res.statusCode !== 200) {
         dfd.reject(makeError(MSG_ERR_COPY, src, dest));
-      } else {
+      }
+      else {
         dfd.resolve(util.format(MSG_COPY_SUCCESS, src, dest));
       }
     });
