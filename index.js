@@ -41,11 +41,13 @@ module.exports = function (grunt) {
   const MSG_UPLOAD_SUCCESS = '↗'.blue + ' Uploaded: %s (%s)';
   const MSG_DOWNLOAD_SUCCESS = '↙'.yellow + ' Downloaded: %s (%s)';
   const MSG_DELETE_SUCCESS = '✗'.red + ' Deleted: %s';
+  const MSG_COPY_SUCCESS = '→'.cyan + ' Copied: %s to %s';
 
   const MSG_ERR_NOT_FOUND = '¯\_(ツ)_/¯ File not found: %s';
   const MSG_ERR_UPLOAD = 'Upload error: %s (%s)';
   const MSG_ERR_DOWNLOAD = 'Download error: %s (%s)';
   const MSG_ERR_DELETE = 'Delete error: %s (%s)';
+  const MSG_ERR_COPY = 'Copy error: %s to %s';
   const MSG_ERR_CHECKSUM = 'Expected hash: %s but found %s for %s';
 
   /**
@@ -97,6 +99,10 @@ module.exports = function (grunt) {
 
     config.del.forEach(function(del) {
       transfers.push(grunt.helper('s3.delete', del.src, del));
+    });
+
+    config.copy.forEach(function(copy) {
+      transfers.push(grunt.helper('s3.copy', copy.src, copy.dest, copy));
     });
 
     var total = transfers.length;
@@ -310,6 +316,42 @@ module.exports = function (grunt) {
             }
           });
         });
+    });
+
+    return dfd;
+  });
+
+  /**
+   * Copy a file from s3 to s3.
+   *
+   * @param {String} src The s3 path, including the bucket, to the file to
+   *     copy.
+   * @param {String} dest The s3 path, relative to the bucket, to the file to
+   *     create.
+   * @param {Object} [options] An object containing options which override any
+   *     option declared in the global s3 config.
+   */
+  grunt.registerHelper('s3.copy', function (src, dest, options) {
+    var dfd = new _.Deferred();
+    var config = _.defaults(options, grunt.config('s3') || {});
+
+    // Pick out the configuration options we need for the client.
+    var client = knox.createClient(_(config).pick([
+      'endpoint', 'port', 'key', 'secret', 'access', 'bucket'
+    ]));
+
+    // Copy the src file to dest.
+    var req = client.put(dest, {
+      'Content-Length': 0,
+      'x-amz-copy-source' : src
+    });
+
+    req.on('response', function (res) {
+      if (res.statusCode !== 200) {
+        dfd.reject(makeError(MSG_ERR_COPY, src, dest));
+      } else {
+        dfd.resolve(util.format(MSG_COPY_SUCCESS, src, dest));
+      }
     });
 
     return dfd;
