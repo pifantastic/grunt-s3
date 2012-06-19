@@ -9,6 +9,7 @@
  */
 
 module.exports = function (grunt) {
+  "use strict";
 
   /**
    * Module dependencies.
@@ -43,7 +44,7 @@ module.exports = function (grunt) {
   const MSG_DELETE_SUCCESS = '✗'.red + ' Deleted: %s';
   const MSG_COPY_SUCCESS = '→'.cyan + ' Copied: %s to %s';
 
-  const MSG_ERR_NOT_FOUND = '¯\_(ツ)_/¯ File not found: %s';
+  const MSG_ERR_NOT_FOUND = '¯\\_(ツ)_/¯ File not found: %s';
   const MSG_ERR_UPLOAD = 'Upload error: %s (%s)';
   const MSG_ERR_DOWNLOAD = 'Download error: %s (%s)';
   const MSG_ERR_DELETE = 'Delete error: %s (%s)';
@@ -73,7 +74,7 @@ module.exports = function (grunt) {
     return _.defaults(grunt.config('s3') || {}, {
       key : process.env['AWS_ACCESS_KEY_ID'],
       secret : process.env['AWS_SECRET_ACCESS_KEY']
-    }
+    });
   }
 
   /**
@@ -99,9 +100,9 @@ module.exports = function (grunt) {
         // If there is only 1 file and it matches the original file wildcard,
         // we know this is a single file transfer. Otherwise, we need to build
         // the destination.
-        var dest = (files.length === 1 && file === upload.src)
-          ? upload.dest
-          : path.join(upload.dest, path.basename(file));
+        var dest = (files.length === 1 && file === upload.src) ?
+          upload.dest :
+          path.join(upload.dest, path.basename(file));
 
         transfers.push(grunt.helper('s3.put', file, dest, upload));
       });
@@ -162,7 +163,7 @@ module.exports = function (grunt) {
       return dfd.reject(makeError(MSG_ERR_NOT_FOUND, src));
     }
 
-    var config = _.defaults(options, getConfig());
+    var config = _.defaults(options || {}, getConfig());
     var headers = options.headers || {};
 
     if (options.access) {
@@ -279,7 +280,7 @@ module.exports = function (grunt) {
    */
   grunt.registerHelper('s3.pull', function (src, dest, options) {
     var dfd = new _.Deferred();
-    var config = _.defaults(options, getConfig());
+    var config = _.defaults(options || {}, getConfig());
 
     // Create a local stream we can write the downloaded file to.
     var file = fs.createWriteStream(dest);
@@ -347,7 +348,7 @@ module.exports = function (grunt) {
    */
   grunt.registerHelper('s3.copy', function (src, dest, options) {
     var dfd = new _.Deferred();
-    var config = _.defaults(options, getConfig());
+    var config = _.defaults(options || {}, getConfig());
 
     // Pick out the configuration options we need for the client.
     var client = knox.createClient(_(config).pick([
@@ -382,7 +383,7 @@ module.exports = function (grunt) {
    */
   grunt.registerHelper('s3.delete', function (src, options) {
     var dfd = new _.Deferred();
-    var config = _.defaults(options, getConfig());
+    var config = _.defaults(options || {}, getConfig());
 
     // Pick out the configuration options we need for the client.
     var client = knox.createClient(_(config).pick([
