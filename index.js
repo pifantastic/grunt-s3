@@ -56,10 +56,24 @@ module.exports = function (grunt) {
    *
    * @param {String} Format.
    * @param {...string|number} Values to insert into Format.
+   * @returns {Error}
    */
   function makeError () {
     var msg = util.format.apply(util, _.toArray(arguments));
     return new Error(msg);
+  }
+
+  /**
+   * Get the grunt s3 configuration options, filling in options from
+   * environment variables if present.
+   *
+   * @returns {Object} The s3 configuration.
+   */
+  function getConfig () {
+    return _.defaults(grunt.config('s3') || {}, {
+      key : process.env['AWS_ACCESS_KEY_ID'],
+      secret : process.env['AWS_SECRET_ACCESS_KEY']
+    }
   }
 
   /**
@@ -69,7 +83,7 @@ module.exports = function (grunt) {
    */
   grunt.registerTask('s3', 'Publishes files to s3.', function () {
     var done = this.async();
-    var config = _.defaults(grunt.config('s3') || {}, {
+    var config = _.defaults(getConfig(), {
       upload: [],
       download: [],
       del: []
@@ -148,7 +162,7 @@ module.exports = function (grunt) {
       return dfd.reject(makeError(MSG_ERR_NOT_FOUND, src));
     }
 
-    var config = _.defaults(options, grunt.config('s3') || {});
+    var config = _.defaults(options, getConfig());
     var headers = options.headers || {};
 
     if (options.access) {
@@ -265,7 +279,7 @@ module.exports = function (grunt) {
    */
   grunt.registerHelper('s3.pull', function (src, dest, options) {
     var dfd = new _.Deferred();
-    var config = _.defaults(options, grunt.config('s3') || {});
+    var config = _.defaults(options, getConfig());
 
     // Create a local stream we can write the downloaded file to.
     var file = fs.createWriteStream(dest);
@@ -333,7 +347,7 @@ module.exports = function (grunt) {
    */
   grunt.registerHelper('s3.copy', function (src, dest, options) {
     var dfd = new _.Deferred();
-    var config = _.defaults(options, grunt.config('s3') || {});
+    var config = _.defaults(options, getConfig());
 
     // Pick out the configuration options we need for the client.
     var client = knox.createClient(_(config).pick([
@@ -368,7 +382,7 @@ module.exports = function (grunt) {
    */
   grunt.registerHelper('s3.delete', function (src, options) {
     var dfd = new _.Deferred();
-    var config = _.defaults(options, grunt.config('s3') || {});
+    var config = _.defaults(options, getConfig());
 
     // Pick out the configuration options we need for the client.
     var client = knox.createClient(_(config).pick([
