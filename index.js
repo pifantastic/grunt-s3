@@ -1,3 +1,6 @@
+/*jshint esnext:true*/
+/*globals module:true, require:true, process:true*/
+
 /*
  * Grunt Task File
  * ---------------
@@ -9,7 +12,6 @@
  */
 
 module.exports = function (grunt) {
-  "use strict";
 
   /**
    * Module dependencies.
@@ -30,6 +32,8 @@ module.exports = function (grunt) {
   const _ = require('underscore');
   const deferred = require('underscore.deferred');
   _.mixin(deferred);
+
+  const existsSync = ('existsSync' in fs) ? fs.existsSync : path.existsSync;
 
   /**
    * Grunt aliases.
@@ -72,8 +76,8 @@ module.exports = function (grunt) {
    */
   function getConfig () {
     return _.defaults(grunt.config('s3') || {}, {
-      key : process.env['AWS_ACCESS_KEY_ID'],
-      secret : process.env['AWS_SECRET_ACCESS_KEY']
+      key : process.env.AWS_ACCESS_KEY_ID,
+      secret : process.env.AWS_SECRET_ACCESS_KEY
     });
   }
 
