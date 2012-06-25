@@ -91,7 +91,8 @@ module.exports = function (grunt) {
     var config = _.defaults(getConfig(), {
       upload: [],
       download: [],
-      del: []
+      del: [],
+      copy: []
     });
 
     var transfers = [];
@@ -163,7 +164,7 @@ module.exports = function (grunt) {
     var dfd = new _.Deferred();
 
     // Make sure the local file exists.
-    if (!path.existsSync(src)) {
+    if (!existsSync(src)) {
       return dfd.reject(makeError(MSG_ERR_NOT_FOUND, src));
     }
 
@@ -227,7 +228,7 @@ module.exports = function (grunt) {
       // Determine a unique temp file name.
       var tmp = src + '.gz';
       var incr = 0;
-      while (path.existsSync(tmp)) {
+      while (existsSync(tmp)) {
         tmp = src + '.' + (incr++) + '.gz';
       }
 
