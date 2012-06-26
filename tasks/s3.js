@@ -70,12 +70,22 @@ module.exports = function (grunt) {
 
   /**
    * Get the grunt s3 configuration options, filling in options from
-   * environment variables if present.
+   * environment variables if present. Also supports grunt template strings.
    *
    * @returns {Object} The s3 configuration.
    */
   function getConfig () {
-    return _.defaults(grunt.config('s3') || {}, {
+    var config = grunt.config('s3') || {};
+
+    // Look for and process grunt template stings
+    var keys = ['key', 'secret', 'bucket'];
+    keys.forEach(function(key) {
+      if (config.hasOwnProperty(key)) {
+        config[key] = grunt.template.process(config[key]);
+      }
+    });
+
+    return _.defaults(config, {
       key : process.env.AWS_ACCESS_KEY_ID,
       secret : process.env.AWS_SECRET_ACCESS_KEY
     });
