@@ -14,6 +14,11 @@ transfers are verified and will produce errors if incomplete.
 * underscore
 * underscore.deferred
 
+## Installation
+
+1. `npm install grunt-s3`
+2. Add `grunt.loadNpmTasks('grunt-s3');` to your project's `grunt.js` file.
+
 ## Configuration
 
 * **key** - (*string*) An Amazon S3 credentials key
@@ -105,6 +110,37 @@ Running `grunt s3` using the above config produces the following output:
     >> ✗ Deleted: documents/launch_codes.txt
     >> ✗ Deleted: documents/backup_plan.txt
     Done, without errors.
+
+### Alternative ways of including your s3 configuration
+
+#### Grunt template strings
+
+(Special thanks to @nanek)
+
+Template strings in grunt will allow you to easily include values from other files. The below example
+demonstrates loading aws settings from another file.
+
+```javascript
+grunt.initConfig({
+  aws: '<json:grunt-aws.json>',
+  s3: {
+    key: '<%= aws.key %>',
+    secret: '<%= aws.secret %>',
+    bucket: '<%= aws.bucket %>',
+    access: 'public-read'
+  }
+}
+```
+
+Where grunt-aws.json is just a json key:value file like package.json.
+
+#### Environment variables
+
+If you do not pass in a **key** and **secret** with your config, `grunt-s3` will fallback to the following
+environment variables:
+
+* `AWS_ACCESS_KEY_ID`
+* `AWS_SECRET_ACCESS_KEY`
 
 ## Helpers
 
