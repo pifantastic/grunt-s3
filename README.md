@@ -218,9 +218,9 @@ download.done(function() {
 
 ```
 
-### Changelog
+## Changelog
 
-##### v0.0.6
+#### v0.0.6
 
 * Bump version of `underscore.deferred` to `0.1.4`. Version `0.1.3` would fail to install sometimes
 due to there being two versions of the module with different capitalizations in npm.
