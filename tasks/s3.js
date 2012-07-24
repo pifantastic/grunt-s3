@@ -370,11 +370,18 @@ module.exports = function (grunt) {
       'endpoint', 'port', 'key', 'secret', 'access', 'bucket'
     ]));
 
-    // Copy the src file to dest.
-    var req = client.put(dest, {
+    var headers = {
       'Content-Length': 0,
       'x-amz-copy-source' : src
-    });
+    };
+
+    if (options.headers) {
+      _(headers).extend(options.headers);
+      headers['x-amz-metadata-directive'] = 'REPLACE';
+    }
+
+    // Copy the src file to dest.
+    var req = client.put(dest, headers);
 
     req.on('response', function (res) {
       if (res.statusCode !== 200) {
