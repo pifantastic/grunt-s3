@@ -112,6 +112,9 @@ module.exports = function (grunt) {
       var files = grunt.file.expandFiles(upload.src);
 
       files.forEach(function(file) {
+        file = path.resolve(file);
+        upload.src = path.resolve(grunt.template.process(upload.src));
+
         // If there is only 1 file and it matches the original file wildcard,
         // we know this is a single file transfer. Otherwise, we need to build
         // the destination.
