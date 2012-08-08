@@ -92,6 +92,15 @@ module.exports = function (grunt) {
   }
 
   /**
+   * Clone an object.
+   *
+   * @returns {Object} A clone of the original object.
+   */
+  function clone (obj) {
+    return JSON.parse(JSON.stringify(obj));
+  }
+
+  /**
    * Transfer files to/from s3.
    *
    * Uses global s3 grunt config.
@@ -173,8 +182,9 @@ module.exports = function (grunt) {
    * @param {Object} [options] An object containing options which override any
    *     option declared in the global s3 config.
    */
-  grunt.registerHelper('s3.put', function (src, dest, options) {
+  grunt.registerHelper('s3.put', function (src, dest, opts) {
     var dfd = new _.Deferred();
+    var options = clone(opts);
 
     // Make sure the local file exists.
     if (!existsSync(src)) {
@@ -296,8 +306,9 @@ module.exports = function (grunt) {
    * @param {Object} [options] An object containing options which override any
    *     option declared in the global s3 config.
    */
-  grunt.registerHelper('s3.pull', function (src, dest, options) {
+  grunt.registerHelper('s3.pull', function (src, dest, opts) {
     var dfd = new _.Deferred();
+    var options = clone(opts);
     var config = _.defaults(options || {}, getConfig());
 
     // Create a local stream we can write the downloaded file to.
@@ -364,8 +375,9 @@ module.exports = function (grunt) {
    * @param {Object} [options] An object containing options which override any
    *     option declared in the global s3 config.
    */
-  grunt.registerHelper('s3.copy', function (src, dest, options) {
+  grunt.registerHelper('s3.copy', function (src, dest, opts) {
     var dfd = new _.Deferred();
+    var options = clone(opts);
     var config = _.defaults(options || {}, getConfig());
 
     // Pick out the configuration options we need for the client.
@@ -406,8 +418,9 @@ module.exports = function (grunt) {
    * @param {Object} [options] An object containing options which override any
    *     option declared in the global s3 config.
    */
-  grunt.registerHelper('s3.delete', function (src, options) {
+  grunt.registerHelper('s3.delete', function (src, opts) {
     var dfd = new _.Deferred();
+    var options = clone(opts);
     var config = _.defaults(options || {}, getConfig());
 
     // Pick out the configuration options we need for the client.
