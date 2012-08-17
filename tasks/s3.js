@@ -248,6 +248,11 @@ module.exports = function (grunt) {
       headers['Content-Encoding'] = 'gzip';
       headers['Content-Type'] = mime.lookup(src);
 
+      var charset = mime.charsets.lookup(headers['Content-Type'], null);
+      if (charset !== null) {
+        headers['Content-Type'] += '; charset=' + charset;
+      }
+
       // Determine a unique temp file name.
       var tmp = src + '.gz';
       var incr = 0;
