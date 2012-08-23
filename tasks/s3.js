@@ -184,7 +184,7 @@ module.exports = function (grunt) {
    */
   grunt.registerHelper('s3.put', function (src, dest, opts) {
     var dfd = new _.Deferred();
-    var options = clone(opts);
+    var options = clone(opts || {});
 
     // Make sure the local file exists.
     if (!existsSync(src)) {
