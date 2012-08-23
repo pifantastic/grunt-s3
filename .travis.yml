@@ -2,7 +2,8 @@ language: node_js
 node_js:
   - 0.6
   - 0.8
-before_install: gem install fakes3
+before_install: sudo gem install fakes3 --user-install
 before_script:
-  - fakes3 -r s3 -p 80 &
+  - sudo PATH=$PATH:/home/vagrant/.gem/ruby/1.9.1/bin
+  - sudo fakes3 -r s3 -p 8888 &
   - sleep 1
