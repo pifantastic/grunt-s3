@@ -8,7 +8,7 @@ module.exports = function(grunt) {
       secret: 'def',
       bucket: 'test',
       endpoint: '127.0.0.1',
-      port: 4567,
+      port: 1337,
       secure: false,
       access: 'public-read'
     }
