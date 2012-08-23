@@ -249,7 +249,7 @@ module.exports = function (grunt) {
       headers['Content-Type'] = mime.lookup(src);
 
       var charset = mime.charsets.lookup(headers['Content-Type'], null);
-      if (charset !== null) {
+      if (charset) {
         headers['Content-Type'] += '; charset=' + charset;
       }
 
