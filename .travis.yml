@@ -1,0 +1,6 @@
+language: node_js
+node_js:
+  - 0.6
+  - 0.8
+before_install: gem install fakes3
+before_script: fakes3 -r s3 -p 4567
