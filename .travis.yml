@@ -4,5 +4,5 @@ node_js:
   - 0.8
 before_install: gem install fakes3
 before_script:
-  - fakes3 -r s3 -p 1337 &
+  - fakes3 -r s3 -p 80 &
   - sleep 1
