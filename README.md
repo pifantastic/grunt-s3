@@ -1,4 +1,3 @@
-[![build status](https://secure.travis-ci.org/pifantastic/grunt-s3.png)](http://travis-ci.org/pifantastic/grunt-s3)
 
 # Grunt + Amazon S3
 
