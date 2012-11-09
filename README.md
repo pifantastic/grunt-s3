@@ -221,6 +221,10 @@ download.done(function() {
 
 ## Changelog
 
+#### v0.0.9
+
+* Bump version of `knox` to `0.4.1`.
+
 #### v0.0.6
 
 * Bump version of `underscore.deferred` to `0.1.4`. Version `0.1.3` would fail to install sometimes
