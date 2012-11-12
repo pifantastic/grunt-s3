@@ -1,3 +1,4 @@
+[![Build Status](https://secure.travis-ci.org/pifantastic/grunt-s3.png?branch=master)](https://travis-ci.org/pifantastic/grunt-s3)
 
 # Grunt + Amazon S3
 
