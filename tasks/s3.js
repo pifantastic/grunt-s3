@@ -311,7 +311,7 @@ module.exports = function (grunt) {
    * @param {Object} [options] An object containing options which override any
    *     option declared in the global s3 config.
    */
-  ver pull = function (src, dest, opts) {
+  var pull = function (src, dest, opts) {
     var dfd = new _.Deferred();
     var options = clone(opts);
     var config = _.defaults(options || {}, getConfig());
