@@ -131,20 +131,20 @@ module.exports = function (grunt) {
           upload.dest :
           path.join(upload.dest, path.basename(file));
 
-        transfers.push(grunt.helper('s3.put', file, dest, upload));
+        transfers.push(put(file, dest, upload));
       });
     });
 
     config.download.forEach(function(download) {
-      transfers.push(grunt.helper('s3.pull', download.src, download.dest, download));
+      transfers.push(pull(download.src, download.dest, download));
     });
 
     config.del.forEach(function(del) {
-      transfers.push(grunt.helper('s3.delete', del.src, del));
+      transfers.push(del(del.src, del));
     });
 
     config.copy.forEach(function(copy) {
-      transfers.push(grunt.helper('s3.copy', copy.src, copy.dest, copy));
+      transfers.push(copy(copy.src, copy.dest, copy));
     });
 
     var total = transfers.length;
@@ -182,7 +182,7 @@ module.exports = function (grunt) {
    * @param {Object} [options] An object containing options which override any
    *     option declared in the global s3 config.
    */
-  grunt.registerHelper('s3.put', function (src, dest, opts) {
+  var put = function (src, dest, opts) {
     var dfd = new _.Deferred();
     var options = clone(opts || {});
 
@@ -297,7 +297,7 @@ module.exports = function (grunt) {
     }
 
     return dfd;
-  });
+  };
 
   /**
    * Download a file from s3.
@@ -311,7 +311,7 @@ module.exports = function (grunt) {
    * @param {Object} [options] An object containing options which override any
    *     option declared in the global s3 config.
    */
-  grunt.registerHelper('s3.pull', function (src, dest, opts) {
+  ver pull = function (src, dest, opts) {
     var dfd = new _.Deferred();
     var options = clone(opts);
     var config = _.defaults(options || {}, getConfig());
@@ -368,7 +368,7 @@ module.exports = function (grunt) {
     });
 
     return dfd;
-  });
+  };
 
   /**
    * Copy a file from s3 to s3.
@@ -380,7 +380,7 @@ module.exports = function (grunt) {
    * @param {Object} [options] An object containing options which override any
    *     option declared in the global s3 config.
    */
-  grunt.registerHelper('s3.copy', function (src, dest, opts) {
+  var copy = function (src, dest, opts) {
     var dfd = new _.Deferred();
     var options = clone(opts);
     var config = _.defaults(options || {}, getConfig());
@@ -413,7 +413,7 @@ module.exports = function (grunt) {
     });
 
     return dfd;
-  });
+  };
 
   /**
    * Delete a file from s3.
@@ -423,7 +423,7 @@ module.exports = function (grunt) {
    * @param {Object} [options] An object containing options which override any
    *     option declared in the global s3 config.
    */
-  grunt.registerHelper('s3.delete', function (src, opts) {
+  var del = function (src, opts) {
     var dfd = new _.Deferred();
     var options = clone(opts);
     var config = _.defaults(options || {}, getConfig());
@@ -444,7 +444,7 @@ module.exports = function (grunt) {
     });
 
     return dfd;
-  });
+  };
 
 };
 
