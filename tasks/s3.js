@@ -53,7 +53,7 @@ module.exports = function (grunt) {
   const MSG_ERR_DOWNLOAD = 'Download error: %s (%s)';
   const MSG_ERR_DELETE = 'Delete error: %s (%s)';
   const MSG_ERR_COPY = 'Copy error: %s to %s';
-  const MSG_ERR_CHECKSUM = 'Expected hash: %s but found %s for %s';
+  const MSG_ERR_CHECKSUM = '%s error: expected hash: %s but found %s for %s';
 
   /**
    * Create an Error object based off of a formatted message. Arguments
@@ -234,7 +234,7 @@ module.exports = function (grunt) {
                 cb(null, msg);
               }
               else {
-                cb(makeError(MSG_ERR_CHECKSUM, localHash, remoteHash, src));
+                cb(makeError(MSG_ERR_CHECKSUM, 'Upload', localHash, remoteHash, src));
               }
             }
           });
@@ -360,7 +360,7 @@ module.exports = function (grunt) {
                 dfd.resolve(msg);
               }
               else {
-                dfd.reject(makeError(MSG_ERR_CHECKSUM, localHash, remoteHash, src));
+                dfd.reject(makeError(MSG_ERR_CHECKSUM, 'Download', localHash, remoteHash, src));
               }
             }
           });
