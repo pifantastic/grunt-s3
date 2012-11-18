@@ -1,8 +1,10 @@
+
 module.exports = function(grunt) {
+
   grunt.initConfig({
     lint : ['tasks/*.js'],
     test: {
-      all: ['test/**/*.js']
+      all: ['test/put.js']
     },
     s3: {
       key: 'abc',
