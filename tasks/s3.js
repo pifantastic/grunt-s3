@@ -14,6 +14,7 @@
 module.exports = function (grunt) {
 
   const _ = require('underscore');
+  const path = require('path');
   const s3 = require('./lib/s3').init(grunt);
 
   /**
