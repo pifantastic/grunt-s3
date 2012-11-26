@@ -40,7 +40,8 @@ module.exports = function (grunt) {
 
     config.upload.forEach(function(upload) {
       // Expand list of files to upload.
-      var files = grunt.file.expandFiles(upload.src);
+      var files = grunt.file.expandFiles(upload.src),
+          destPath = grunt.template.process(upload.dest);
 
       files.forEach(function(file) {
         file = path.resolve(file);
@@ -51,14 +52,14 @@ module.exports = function (grunt) {
         // the destination.
         var dest;
         if (files.length === 1 && file === upload.src) {
-          dest = upload.dest;
+          dest = destPath;
         }
         else {
           if (upload.rel) {
-            dest = path.join(upload.dest, path.relative(grunt.file.expandDirs(upload.rel)[0], file));
+            dest = path.join(destPath, path.relative(grunt.file.expandDirs(upload.rel)[0], file));
           }
           else {
-            dest = path.join(upload.dest, path.basename(file));
+            dest = path.join(destPath, path.basename(file));
           }
         }
 
