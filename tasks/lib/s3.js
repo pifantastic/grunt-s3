@@ -72,10 +72,10 @@ exports.init = function (grunt) {
       }
     });
 
-    return _.defaults(config, {
+    return common.clone(_.defaults(config, {
       key : process.env.AWS_ACCESS_KEY_ID,
       secret : process.env.AWS_SECRET_ACCESS_KEY
-    });
+    }));
   }
 
   /**
