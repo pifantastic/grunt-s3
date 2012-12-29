@@ -2,8 +2,8 @@
 module.exports = function(grunt) {
 
   grunt.initConfig({
-    lint : ['tasks/*.js'],
-    test: {
+    jshint : ['tasks/*.js'],
+    nodeunit: {
       all: ['test/put.js']
     },
     s3: {
@@ -17,5 +17,8 @@ module.exports = function(grunt) {
     }
   });
 
+  grunt.loadNpmTasks('grunt-contrib-jshint');
+  grunt.loadNpmTasks('grunt-contrib-nodeunit');
+  grunt.registerTask('test', ['nodeunit']);
   grunt.loadTasks(__dirname + '/tasks');
 };
