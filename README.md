@@ -1,6 +1,6 @@
 [![Build Status](https://secure.travis-ci.org/pifantastic/grunt-s3.png?branch=master)](https://travis-ci.org/pifantastic/grunt-s3)
 
-# Grunt + Amazon S3
+# Grunt 0.4.x + Amazon S3
 
 ## About
 
@@ -18,8 +18,15 @@ transfers are verified and will produce errors if incomplete.
 
 ## Installation
 
-1. `npm install grunt-s3`
-2. Add `grunt.loadNpmTasks('grunt-s3');` to your project's `grunt.js` file.
+```sh
+npm install grunt-s3 --save-dev
+```
+
+Then add this line to your project's `Gruntfile.js`:
+
+```javascript
+grunt.loadNpmTasks('grunt-s3');
+```
 
 ## Configuration
 
@@ -221,6 +228,10 @@ download.done(function() {
 ```
 
 ## Changelog
+
+#### v0.1.0
+
+* Update to be compatible with `grunt` version `0.4.x`.
 
 #### v0.0.9
 
