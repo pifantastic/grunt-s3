@@ -19,13 +19,13 @@ transfers are verified and will produce errors if incomplete.
 ## Installation
 
 ```sh
-npm install grunt-barkeep --save-dev
+npm install grunt-s3 --save-dev
 ```
 
 Then add this line to your project's `Gruntfile.js`:
 
 ```javascript
-grunt.loadNpmTasks('grunt-barkeep');
+grunt.loadNpmTasks('grunt-s3');
 ```
 
 ## Configuration
