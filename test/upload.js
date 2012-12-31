@@ -5,7 +5,7 @@ var hashFile = require('../tasks/lib/common').hashFile;
 var s3 = require('../tasks/lib/s3').init(grunt);
 
 module.exports = {
-  testPut : function (test) {
+  testUpload : function (test) {
     test.expect(2);
 
     async.waterfall([
@@ -35,7 +35,7 @@ module.exports = {
     });
   },
 
-  testPutWithHeaders : function (test) {
+  testUploadWithHeaders : function (test) {
     test.expect(1);
 
     async.waterfall([
@@ -45,6 +45,7 @@ module.exports = {
 
         s3.upload(src, 'b.txt', { headers : {'Content-Type' : '<3'} })
           .always(function () {
+            console.log(grunt.file.read(dest))
             test.ok(grunt.file.read(dest).indexOf(':content_type: <3') !== -1, 'Headers are preserved.');
             cb(null);
           });
