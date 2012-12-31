@@ -17,5 +17,5 @@ exports.hashFile = function(path) {
  * @returns {Object} A clone of the original object.
  */
 exports.clone = function(obj) {
-  return JSON.parse(JSON.stringify(obj));
+  return JSON.parse(JSON.stringify(obj || {}));
 }

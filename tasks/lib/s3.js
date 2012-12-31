@@ -22,25 +22,26 @@ _.mixin(deferred);
 // Local
 const common = require('./common');
 
+// Avoid warnings.
 const existsSync = ('existsSync' in fs) ? fs.existsSync : path.existsSync;
+
+/**
+ * Success/error messages.
+ */
+const MSG_UPLOAD_SUCCESS = '↗'.blue + ' Uploaded: %s (%s)';
+const MSG_DOWNLOAD_SUCCESS = '↙'.yellow + ' Downloaded: %s (%s)';
+const MSG_DELETE_SUCCESS = '✗'.red + ' Deleted: %s';
+const MSG_COPY_SUCCESS = '→'.cyan + ' Copied: %s to %s';
+
+const MSG_ERR_NOT_FOUND = '¯\\_(ツ)_/¯ File not found: %s';
+const MSG_ERR_UPLOAD = 'Upload error: %s (%s)';
+const MSG_ERR_DOWNLOAD = 'Download error: %s (%s)';
+const MSG_ERR_DELETE = 'Delete error: %s (%s)';
+const MSG_ERR_COPY = 'Copy error: %s to %s';
+const MSG_ERR_CHECKSUM = '%s error: expected hash: %s but found %s for %s';
 
 exports.init = function (grunt) {
   var exports = {};
-
-  /**
-   * Success/error messages.
-   */
-  const MSG_UPLOAD_SUCCESS = '↗'.blue + ' Uploaded: %s (%s)';
-  const MSG_DOWNLOAD_SUCCESS = '↙'.yellow + ' Downloaded: %s (%s)';
-  const MSG_DELETE_SUCCESS = '✗'.red + ' Deleted: %s';
-  const MSG_COPY_SUCCESS = '→'.cyan + ' Copied: %s to %s';
-
-  const MSG_ERR_NOT_FOUND = '¯\\_(ツ)_/¯ File not found: %s';
-  const MSG_ERR_UPLOAD = 'Upload error: %s (%s)';
-  const MSG_ERR_DOWNLOAD = 'Download error: %s (%s)';
-  const MSG_ERR_DELETE = 'Delete error: %s (%s)';
-  const MSG_ERR_COPY = 'Copy error: %s to %s';
-  const MSG_ERR_CHECKSUM = '%s error: expected hash: %s but found %s for %s';
 
   /**
    * Create an Error object based off of a formatted message. Arguments
@@ -72,6 +73,7 @@ exports.init = function (grunt) {
       }
     });
 
+    // Default to environment variables for s3 key/secret.
     return common.clone(_.defaults(config, {
       key : process.env.AWS_ACCESS_KEY_ID,
       secret : process.env.AWS_SECRET_ACCESS_KEY
@@ -92,14 +94,14 @@ exports.init = function (grunt) {
    */
   exports.put = exports.upload = function (src, dest, opts) {
     var dfd = new _.Deferred();
-    var options = common.clone(opts || {});
+    var options = common.clone(opts);
 
     // Make sure the local file exists.
     if (!existsSync(src)) {
       return dfd.reject(makeError(MSG_ERR_NOT_FOUND, src));
     }
 
-    var config = _.defaults(options || {}, getConfig());
+    var config = _.defaults(options, getConfig());
     var headers = options.headers || {};
 
     if (options.access) {
@@ -222,7 +224,7 @@ exports.init = function (grunt) {
   exports.pull = exports.download = function (src, dest, opts) {
     var dfd = new _.Deferred();
     var options = common.clone(opts);
-    var config = _.defaults(options || {}, getConfig());
+    var config = _.defaults(options, getConfig());
 
     // Create a local stream we can write the downloaded file to.
     var file = fs.createWriteStream(dest);
@@ -291,7 +293,7 @@ exports.init = function (grunt) {
   exports.copy = function (src, dest, opts) {
     var dfd = new _.Deferred();
     var options = common.clone(opts);
-    var config = _.defaults(options || {}, getConfig());
+    var config = _.defaults(options, getConfig());
 
     // Pick out the configuration options we need for the client.
     var client = knox.createClient(_(config).pick([
@@ -334,7 +336,7 @@ exports.init = function (grunt) {
   exports.del = function (src, opts) {
     var dfd = new _.Deferred();
     var options = common.clone(opts);
-    var config = _.defaults(options || {}, getConfig());
+    var config = _.defaults(options, getConfig());
 
     // Pick out the configuration options we need for the client.
     var client = knox.createClient(_(config).pick([

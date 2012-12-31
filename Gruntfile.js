@@ -4,7 +4,7 @@ module.exports = function(grunt) {
   grunt.initConfig({
     jshint : ['tasks/*.js'],
     nodeunit: {
-      all: ['test/put.js']
+      all: ['test/upload.js', 'test/download.js']
     },
     s3: {
       key: 'abc',

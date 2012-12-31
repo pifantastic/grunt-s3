@@ -20,7 +20,7 @@ module.exports = function (grunt) {
   /**
    * Grunt aliases.
    */
-  var log = grunt.log;
+  const log = grunt.log;
 
   /**
    * Transfer files to/from s3.
