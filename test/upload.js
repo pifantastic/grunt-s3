@@ -1,6 +1,7 @@
 
 var async = require('async');
 var grunt = require('grunt');
+var yaml = require('libyaml');
 var hashFile = require('../tasks/lib/common').hashFile;
 var s3 = require('../tasks/lib/s3').init(grunt);
 
@@ -35,7 +36,6 @@ module.exports = {
     });
   },
 
-  /*
   testUploadWithHeaders : function (test) {
     test.expect(1);
 
@@ -46,7 +46,8 @@ module.exports = {
 
         s3.upload(src, 'b.txt', { headers : {'Content-Type' : '<3'} })
           .always(function () {
-            test.ok(grunt.file.read(dest).indexOf(':content_type: <3') !== -1, 'Headers are preserved.');
+            var meta = yaml.parse(grunt.file.read(dest))
+            test.ok(meta[0][':content_type'] === new Buffer('<3').toString('base64'), 'Headers are preserved.');
             cb(null);
           });
       }
@@ -54,5 +55,4 @@ module.exports = {
       test.done();
     });
   }
-  */
 };
