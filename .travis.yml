@@ -1,7 +1,7 @@
 language: node_js
 node_js:
   - 0.8
-before_install: 
+before_install:
   - sudo gem install fakes3
   - npm install -g grunt-cli
 before_script:

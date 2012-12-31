@@ -41,6 +41,7 @@
   "devDependencies": {
     "nodeunit": "~0.7.4",
     "grunt-contrib-jshint": "~0.1.0",
-    "grunt-contrib-nodeunit": "~0.1.1"
+    "grunt-contrib-nodeunit": "~0.1.1",
+    "libyaml": "~0.2.1"
   }
 }
