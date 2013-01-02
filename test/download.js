@@ -17,5 +17,22 @@ module.exports = {
       .always(function () {
         test.done();
       })
+  },
+
+  testDownloadDebug : function (test) {
+    test.expect(1);
+
+    var dest = __dirname + '/files/b.txt.debug';
+    var src = __dirname + '/../s3/127/b.txt/.fakes3_metadataFFF/content';
+
+    s3.download('b.txt', dest, { debug: true })
+      .done(function () {
+        test.throws(function () {
+          grunt.file.read(dest);
+        });
+      })
+      .always(function () {
+        test.done();
+      })
   }
 };
