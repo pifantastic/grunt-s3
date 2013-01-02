@@ -118,7 +118,7 @@ exports.init = function (grunt) {
       'endpoint', 'port', 'key', 'secret', 'access', 'bucket'
     ]));
 
-    if (grunt.option("debug")) {
+    if (config.debug) {
       return dfd.resolve(util.format(MSG_UPLOAD_DEBUG, path.relative(process.cwd(), src), client.bucket, dest)).promise();
     }
 
@@ -235,17 +235,17 @@ exports.init = function (grunt) {
     var options = common.clone(opts);
     var config = _.defaults(options, getConfig());
 
-    // Create a local stream we can write the downloaded file to.
-    var file = fs.createWriteStream(dest);
-
     // Pick out the configuration options we need for the client.
     var client = knox.createClient(_(config).pick([
       'endpoint', 'port', 'key', 'secret', 'access', 'bucket'
     ]));
 
-    if (grunt.option("debug")) {
+    if (config.debug) {
       return dfd.resolve(util.format(MSG_DOWNLOAD_DEBUG, client.bucket, src, path.relative(process.cwd(), dest))).promise();
     }
+
+    // Create a local stream we can write the downloaded file to.
+    var file = fs.createWriteStream(dest);
 
     // Upload the file to s3.
     client.getFile(src, function (err, res) {
@@ -313,7 +313,7 @@ exports.init = function (grunt) {
       'endpoint', 'port', 'key', 'secret', 'access', 'bucket'
     ]));
 
-    if (grunt.option("debug")) {
+    if (config.debug) {
       return dfd.resolve(util.format(MSG_COPY_DEBUG, src, client.bucket, dest)).promise();
     }
 
@@ -360,7 +360,7 @@ exports.init = function (grunt) {
       'endpoint', 'port', 'key', 'secret', 'access', 'bucket'
     ]));
 
-    if (grunt.option("debug")) {
+    if (config.debug) {
       return dfd.resolve(util.format(MSG_DELETE_DEBUG, client.bucket, src)).promise();
     }
 

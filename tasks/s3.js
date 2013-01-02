@@ -38,7 +38,7 @@ module.exports = function (grunt) {
 
     var transfers = [];
 
-    if (grunt.option("debug")) {
+    if (config.debug) {
       log.writeln("Running in debug mode, no transfers will be made".yellow);
       log.writeln();
     }
