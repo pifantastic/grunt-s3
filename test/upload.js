@@ -5,23 +5,31 @@ var hashFile = require('../tasks/lib/common').hashFile;
 var s3 = require('../tasks/lib/s3').init(grunt);
 
 module.exports = {
-  testTask : function (test) {
-    var config = s3.getConfig();
-    test.expect(2);
+  task : {
+    singleUpload : function (test) {
+      var config = s3.getConfig();
+      test.expect(1);
 
-    var src = __dirname + '/files/a.txt';
-    var dest = __dirname + '/../s3/127/a.txt/.fakes3_metadataFFF/content';
+      var src = __dirname + '/files/a.txt';
+      var dest = __dirname + '/../s3/127/a.txt/.fakes3_metadataFFF/content';
 
-    config.upload = [{ src : 'test/files/a.txt', dest : 'a.txt' }];
-    s3.task(config, function (err) {
-      test.ok(hashFile(src) === hashFile(dest), 'File uploaded successfully.');
-    });
+      config.upload = [{ src : 'test/files/a.txt', dest : 'a.txt' }];
+      s3.task(config, function (err) {
+        test.ok(hashFile(src) === hashFile(dest), 'File uploaded successfully.');
+        test.done();
+      });
+    },
 
-    config.upload = [{ src : 'test/files/*.txt', dest : 'files' }];
-    s3.task(config, function (err, transfers) {
-      test.ok(transfers === 2, 'Wildcard matches all files.');
-      test.done();
-    });
+    wildcard : function (test) {
+      var config = s3.getConfig();
+      test.expect(1);
+
+      config.upload = [{ src : 'test/files/*.txt', dest : 'files' }];
+      s3.task(config, function (err, transfers) {
+        test.ok(transfers === 2, 'Wildcard matches all files.');
+        test.done();
+      });
+    }
   },
 
   testUpload : function (test) {
