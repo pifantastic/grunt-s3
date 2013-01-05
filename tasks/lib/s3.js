@@ -1,3 +1,4 @@
+/*jshint esnext:true */
 
 /**
  * Module dependencies.
@@ -41,6 +42,7 @@ const MSG_ERR_COPY = 'Copy error: %s to %s';
 const MSG_ERR_CHECKSUM = '%s error: expected hash: %s but found %s for %s';
 
 exports.init = function (grunt) {
+  var log = grunt.log;
   var exports = {};
 
   /**
@@ -54,7 +56,7 @@ exports.init = function (grunt) {
   var makeError = exports.makeError = function () {
     var msg = util.format.apply(util, _.toArray(arguments));
     return new Error(msg);
-  }
+  };
 
   /**
    * Get the grunt s3 configuration options, filling in options from
@@ -63,7 +65,12 @@ exports.init = function (grunt) {
    * @returns {Object} The s3 configuration.
    */
   var getConfig = exports.getConfig = function () {
-    var config = grunt.config('s3') || {};
+    var config = _.defaults(grunt.config('s3') || {}, {
+      upload: [],
+      download: [],
+      del: [],
+      copy: []
+    });
 
     // Look for and process grunt template stings
     var keys = ['key', 'secret', 'bucket'];
@@ -78,7 +85,79 @@ exports.init = function (grunt) {
       key : process.env.AWS_ACCESS_KEY_ID,
       secret : process.env.AWS_SECRET_ACCESS_KEY
     }));
-  }
+  };
+
+  /**
+   * Perform the grunt `s3` task given the options specified in the Gruntfile.
+   * @param  {Object}   config
+   * @param  {Function} cb
+   */
+  exports.task = function (config, cb) {
+    var transfers = [];
+
+    config.upload.forEach(function(opts) {
+      // Expand list of files to upload.
+      var files = grunt.file.expandFiles(opts.src),
+          destPath = grunt.template.process(opts.dest);
+
+      files.forEach(function(file) {
+        file = path.resolve(file);
+        opts.src = path.resolve(grunt.template.process(opts.src));
+
+        // If there is only 1 file and it matches the original file wildcard,
+        // we know this is a single file transfer. Otherwise, we need to build
+        // the destination.
+        var dest;
+        if (files.length === 1 && file === opts.src) {
+          dest = destPath;
+        }
+        else {
+          if (opts.rel) {
+            dest = path.join(destPath, path.relative(grunt.file.expandDirs(opts.rel)[0], file));
+          }
+          else {
+            dest = path.join(destPath, path.basename(file));
+          }
+        }
+
+        transfers.push(upload(file, dest, opts));
+      });
+    });
+
+    config.download.forEach(function(opts) {
+      transfers.push(download(opts.src, opts.dest, opts));
+    });
+
+    config.del.forEach(function(opts) {
+      transfers.push(del(opts.src, opts));
+    });
+
+    config.copy.forEach(function(opts) {
+      transfers.push(copy(opts.src, opts.dest, opts));
+    });
+
+    var total = transfers.length;
+    var errors = 0;
+
+    // Keep a running total of errors/completions as the transfers complete.
+    transfers.forEach(function(transfer) {
+      transfer.done(function(msg) {
+        log.ok(msg);
+      });
+
+      transfer.fail(function(msg) {
+        log.error(msg);
+        ++errors;
+      });
+
+      transfer.always(function() {
+        // If this was the last transfer to complete, we're all done.
+        if (--total === 0) {
+          cb(!errors, transfers.length);
+        }
+      });
+    });
+  };
 
   /**
    * Publishes the local file at src to the s3 dest.
@@ -92,7 +171,7 @@ exports.init = function (grunt) {
    * @param {Object} [options] An object containing options which override any
    *     option declared in the global s3 config.
    */
-  exports.put = exports.upload = function (src, dest, opts) {
+  var upload = exports.put = exports.upload = function (src, dest, opts) {
     var dfd = new _.Deferred();
     var options = common.clone(opts);
 
@@ -221,7 +300,7 @@ exports.init = function (grunt) {
    * @param {Object} [options] An object containing options which override any
    *     option declared in the global s3 config.
    */
-  exports.pull = exports.download = function (src, dest, opts) {
+  var download = exports.pull = exports.download = function (src, dest, opts) {
     var dfd = new _.Deferred();
     var options = common.clone(opts);
     var config = _.defaults(options, getConfig());
@@ -290,7 +369,7 @@ exports.init = function (grunt) {
    * @param {Object} [options] An object containing options which override any
    *     option declared in the global s3 config.
    */
-  exports.copy = function (src, dest, opts) {
+  var copy = exports.copy = function (src, dest, opts) {
     var dfd = new _.Deferred();
     var options = common.clone(opts);
     var config = _.defaults(options, getConfig());
@@ -333,7 +412,7 @@ exports.init = function (grunt) {
    * @param {Object} [options] An object containing options which override any
    *     option declared in the global s3 config.
    */
-  exports.del = function (src, opts) {
+  var del = exports.del = function (src, opts) {
     var dfd = new _.Deferred();
     var options = common.clone(opts);
     var config = _.defaults(options, getConfig());
