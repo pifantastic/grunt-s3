@@ -2,7 +2,10 @@
 module.exports = function(grunt) {
 
   grunt.initConfig({
-    jshint : ['tasks/**/*.js'],
+    jshint: {
+      src: ['tasks/**/*.js'],
+      test: ['test/**/*.js']
+    },
     nodeunit: {
       all: ['test/upload.js', 'test/download.js']
     },
@@ -20,5 +23,6 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-nodeunit');
   grunt.registerTask('test', ['nodeunit']);
+  grunt.registerTask('default', ['jshint', 'nodeunit']);
   grunt.loadTasks(__dirname + '/tasks');
 };

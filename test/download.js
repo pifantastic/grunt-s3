@@ -1,20 +1,36 @@
 
+var Tempfile = require('temporary/lib/file');
 var grunt = require('grunt');
 var hashFile = require('../tasks/lib/common').hashFile;
 var s3 = require('../tasks/lib/s3').init(grunt);
+var helpers = require('./helpers');
 
 module.exports = {
-  testTask : function (test) {
-    var config = s3.getConfig();
-    test.expect(1);
 
-    var dest = __dirname + '/files/a.txt';
-    var src = __dirname + '/../s3/127/a.txt/.fakes3_metadataFFF/content';
+  main : {
 
-    config.download = [{ src : 'a.txt', dest : dest }];
-    s3.task(config, function (err, transfers) {
-      test.ok(hashFile(src) === hashFile(dest), 'File downloaded successfully.');
-      test.done();
-    });
+    testTask : {
+
+      singleDownload : function (test) {
+        var config = s3.getConfig();
+        test.expect(1);
+
+        var dest = new Tempfile();
+        var src = helpers.s3Path('a.txt');
+
+        config.download = [{ src : 'a.txt', dest : dest.path }];
+        s3.task(config, function (err, transfers) {
+          test.ok(hashFile(src.content) === hashFile(dest.path), 'File downloaded successfully.');
+          test.done();
+        });
+      }
+
+    }
+
+  },
+
+  tearDown : function (cb) {
+    helpers.clean();
+    helpers.stopServer(cb);
   }
 };

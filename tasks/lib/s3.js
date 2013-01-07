@@ -93,6 +93,11 @@ exports.init = function (grunt) {
    * @param  {Function} cb
    */
   exports.task = function (config, cb) {
+    if (_(config).isFunction()) {
+      cb = config;
+      config = getConfig();
+    }
+
     var transfers = [];
 
     config.upload.forEach(function(opts) {
@@ -153,7 +158,7 @@ exports.init = function (grunt) {
       transfer.always(function() {
         // If this was the last transfer to complete, we're all done.
         if (--total === 0) {
-          cb(!errors, transfers.length);
+          cb(errors ? true : null, transfers.length);
         }
       });
     });
