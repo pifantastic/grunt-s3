@@ -38,6 +38,11 @@ module.exports = function (grunt) {
 
     var transfers = [];
 
+    if (config.debug) {
+      log.writeln("Running in debug mode, no transfers will be made".yellow);
+      log.writeln();
+    }
+
     config.upload.forEach(function(upload) {
       // Expand list of files to upload.
       var files = grunt.file.expandFiles(upload.src),
@@ -103,4 +108,3 @@ module.exports = function (grunt) {
   });
 
 };
-

@@ -54,5 +54,21 @@ module.exports = {
     ], function () {
       test.done();
     });
+  },
+
+  testUploadDebug : function (test) {
+    test.expect(1);
+
+    var src = __dirname + '/files/c.txt';
+    var dest = __dirname + '/../s3/127/c.txt/.fakes3_metadataFFF/content';
+
+    s3.upload(src, "c.txt", { debug: true })
+      .always(function () {
+        test.throws(function () {
+          grunt.file.read(dest);
+        });
+
+        test.done();
+      })
   }
 };

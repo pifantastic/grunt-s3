@@ -44,6 +44,7 @@ and a `dest`. Any of the above values may also be overriden.
 `src` and a `dest`. Any of the above values may also be overriden.
 * **del** - (*array*) An array of objects, each object containing a `src` to delete from s3. Any of
 the above values may also be overriden.
+* **debug** - (*boolean*) If true, no transfers with S3 will occur, will print all actions for review by user
 
 ### Example
 
@@ -174,7 +175,6 @@ any values specified in the main config.
 * **gzip** - (*boolean*) If true, uploads will be gzip-encoded.
 
 ### grunt.helper('s3.pull', src, dest, options)
-
 Download a file from s3. Returns a Promises/J-style Deferred object.
 
 **src** (required) - The path on S3 from which the file will be downloaded, relative to the bucket. **Does not accept wildcards**

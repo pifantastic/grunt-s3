@@ -33,6 +33,11 @@ const MSG_DOWNLOAD_SUCCESS = '↙'.yellow + ' Downloaded: %s (%s)';
 const MSG_DELETE_SUCCESS = '✗'.red + ' Deleted: %s';
 const MSG_COPY_SUCCESS = '→'.cyan + ' Copied: %s to %s';
 
+const MSG_UPLOAD_DEBUG = '↗'.blue + ' Upload: ' + '%s'.grey + ' to ' + '%s:%s'.cyan;
+const MSG_DOWNLOAD_DEBUG = '↙'.yellow + ' Download: ' + '%s:%s'.cyan + ' to ' + '%s'.grey;
+const MSG_DELETE_DEBUG = '✗'.red + ' Delete: ' + '%s:%s'.cyan;
+const MSG_COPY_DEBUG = '→'.cyan + ' Copy: ' + '%s'.cyan + ' to ' + '%s:%s'.cyan;
+
 const MSG_ERR_NOT_FOUND = '¯\\_(ツ)_/¯ File not found: %s';
 const MSG_ERR_UPLOAD = 'Upload error: %s (%s)';
 const MSG_ERR_DOWNLOAD = 'Download error: %s (%s)';
@@ -112,6 +117,10 @@ exports.init = function (grunt) {
     var client = knox.createClient(_(config).pick([
       'endpoint', 'port', 'key', 'secret', 'access', 'bucket'
     ]));
+
+    if (config.debug) {
+      return dfd.resolve(util.format(MSG_UPLOAD_DEBUG, path.relative(process.cwd(), src), client.bucket, dest)).promise();
+    }
 
     // Encapsulate this logic to make it easier to gzip the file first if
     // necesssary.
@@ -226,13 +235,17 @@ exports.init = function (grunt) {
     var options = common.clone(opts);
     var config = _.defaults(options, getConfig());
 
-    // Create a local stream we can write the downloaded file to.
-    var file = fs.createWriteStream(dest);
-
     // Pick out the configuration options we need for the client.
     var client = knox.createClient(_(config).pick([
       'endpoint', 'port', 'key', 'secret', 'access', 'bucket'
     ]));
+
+    if (config.debug) {
+      return dfd.resolve(util.format(MSG_DOWNLOAD_DEBUG, client.bucket, src, path.relative(process.cwd(), dest))).promise();
+    }
+
+    // Create a local stream we can write the downloaded file to.
+    var file = fs.createWriteStream(dest);
 
     // Upload the file to s3.
     client.getFile(src, function (err, res) {
@@ -300,6 +313,10 @@ exports.init = function (grunt) {
       'endpoint', 'port', 'key', 'secret', 'access', 'bucket'
     ]));
 
+    if (config.debug) {
+      return dfd.resolve(util.format(MSG_COPY_DEBUG, src, client.bucket, dest)).promise();
+    }
+
     var headers = {
       'Content-Length': 0,
       'x-amz-copy-source' : src
@@ -342,6 +359,10 @@ exports.init = function (grunt) {
     var client = knox.createClient(_(config).pick([
       'endpoint', 'port', 'key', 'secret', 'access', 'bucket'
     ]));
+
+    if (config.debug) {
+      return dfd.resolve(util.format(MSG_DELETE_DEBUG, client.bucket, src)).promise();
+    }
 
     // Upload the file to this endpoint.
     client.deleteFile(src, function (err, res) {
