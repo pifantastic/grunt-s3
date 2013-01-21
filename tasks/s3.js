@@ -45,7 +45,7 @@ module.exports = function (grunt) {
 
     config.upload.forEach(function(upload) {
       // Expand list of files to upload.
-      var files = grunt.file.expandFiles(upload.src),
+      var files = grunt.file.expand({ filter: "isFile" }, upload.src),
           destPath = grunt.template.process(upload.dest);
 
       files.forEach(function(file) {
@@ -61,7 +61,7 @@ module.exports = function (grunt) {
         }
         else {
           if (upload.rel) {
-            dest = path.join(destPath, path.relative(grunt.file.expandDirs(upload.rel)[0], file));
+            dest = path.join(destPath, path.relative(grunt.file.expand({ filter: "isDirectory" }, upload.rel)[0], file));
           }
           else {
             dest = path.join(destPath, path.basename(file));
