@@ -1,9 +1,10 @@
 
-var async = require('async');
 var grunt = require('grunt');
 var yaml = require('libyaml');
 var hashFile = require('../tasks/lib/common').hashFile;
 var s3 = require('../tasks/lib/s3').init(grunt);
+
+var async = grunt.util.async;
 
 module.exports = {
   testUpload : function (test) {
