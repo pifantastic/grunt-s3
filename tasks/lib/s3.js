@@ -79,7 +79,7 @@ exports.init = function (grunt) {
    */
   exports.put = exports.upload = function (src, dest, opts) {
     var dfd = new _.Deferred();
-    var options = common.clone(opts);
+    var options = _.clone(opts);
 
     // Make sure the local file exists.
     if (!existsSync(src)) {
@@ -212,7 +212,7 @@ exports.init = function (grunt) {
    */
   exports.pull = exports.download = function (src, dest, opts) {
     var dfd = new _.Deferred();
-    var options = common.clone(opts);
+    var options = _.clone(opts);
     var config = options;
 
     // Pick out the configuration options we need for the client.
@@ -285,7 +285,7 @@ exports.init = function (grunt) {
    */
   exports.copy = function (src, dest, opts) {
     var dfd = new _.Deferred();
-    var options = common.clone(opts);
+    var options = _.clone(opts);
     var config = _.defaults(options, getConfig());
 
     // Pick out the configuration options we need for the client.
@@ -332,7 +332,7 @@ exports.init = function (grunt) {
    */
   exports.del = function (src, opts) {
     var dfd = new _.Deferred();
-    var options = common.clone(opts);
+    var options = _.clone(opts);
     var config = _.defaults(options, getConfig());
 
     // Pick out the configuration options we need for the client.
