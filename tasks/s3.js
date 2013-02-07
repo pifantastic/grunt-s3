@@ -7,19 +7,19 @@
  *
  * Task: S3
  * Description: Move files to and from s3
- * Dependencies: knox, async, underscore.deferred
+ * Dependencies: knox, underscore.deferred
  *
  */
 
 module.exports = function (grunt) {
 
-  const _ = require('underscore');
   const path = require('path');
   const s3 = require('./lib/s3').init(grunt);
 
   /**
    * Grunt aliases.
    */
+  const _ = grunt.util._;
   const log = grunt.log;
 
   /**
