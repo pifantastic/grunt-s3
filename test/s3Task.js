@@ -1,37 +1,45 @@
-var async = require('async');
+var path = require('path');
 var grunt = require('grunt');
 var s3 = require('../tasks/lib/s3').init(grunt);
 var S3Task = require("../tasks/lib/S3Task");
 var deferred = require('underscore.deferred');
 
+var async = grunt.util.async;
 var _ = grunt.util._;
 _.mixin(deferred);
 
 var s3Config = grunt.config("s3"),
-    config = _.extend({}, s3Config.options, s3Config.test.options);
+    config = _.extend({}, s3Config.options, s3Config.test_S3Task.options);
 
-module.exports = {
-  "run": function(test) {
-  	var taskDef = new _.Deferred(),
-  		asyncCalls = 0;
-  	
-  	// A fake grunt task
+var makeMockTask = function(taskDef) {
+	// A fake grunt task
   	// TODO: Figure out if grunt has a way to mock this.
   	var mockTask = {
+  		_asyncCalls: 0,
   		async: function() {
-  			asyncCalls++;
+  			this._asyncCalls++;
   			return function(result) {
   				taskDef.resolve(result);
   			};
   		},
   		options: function(defaults) {
-  			return _.defaults({}, s3Config.options, s3Config.test_S3Task.options, defaults);
+  			return _.defaults({}, config, defaults);
   		},
   		data: s3Config.test_S3Task
   	};
 
   	// Remove the options from the data.
   	mockTask.data.options = null;
+
+  	return mockTask;
+}
+
+module.exports = {
+  "run": function(test) {
+  	var taskDef = new _.Deferred(),
+  		asyncCalls = 0;
+
+  	var mockTask = makeMockTask(taskDef);
 
   	var task = new S3Task(mockTask, s3);
 
@@ -40,7 +48,7 @@ module.exports = {
   		uploadFiles = [],
   		uploadCalls = 0;
 
-  	// Fake the upload functionality
+  	// Fake the upload functionality; it's tested elsewhere
   	s3.upload = function(file, dest, opts) {
   		uploadCalls++;
 
@@ -57,35 +65,58 @@ module.exports = {
 
   	// Wait for the run() call to complete then test activity
   	taskDef.then(function(result) {
-  			test.equal(asyncCalls, 1, "1 async() call");
+  			test.equal(mockTask._asyncCalls, 1, "1 async() call");
   			test.equal(uploadFiles.length, 5, "5 uploaded files");
   			test.equal(uploadFiles[0], "a.txt", "Correct rel path on uploaded file 1");
   			test.equal(uploadFiles[4], "subdir/d.txt", "Correct rel path for subdir file");
 
   			test.ok(result, "Completed");
   		}, function(err) {
-  			test.ok(false, "Completed");
+  			test.ok(false, "Error'd");
   		})
   		.always(function() {
+
+  			s3.upload = uploadOrig;
   			test.done();
   		});
 
   	task.run();
   },
 
+  "_parseUploadFiles": function(test) {
+
+  	var mockTask = makeMockTask();
+
+  	var task = new S3Task(mockTask, s3);
+
+  	var config = task._getConfig();
+
+  	test.equal(config.upload.length, 1, "Has upload to parse");
+
+  	var uploadFiles = task._parseUploadFiles(config.upload[0], config);
+
+  	test.equal(uploadFiles.length, 5, "Has 5 files to be uploaded");
+  	// File paths in root
+  	test.equal(uploadFiles[0].file, path.join(process.cwd(), "test", "files", "a.txt"));
+  	test.equal(uploadFiles[1].file, path.join(process.cwd(), "test", "files", "b.txt"));
+  	// File paths in subdir
+  	test.equal(uploadFiles[3].file, path.join(process.cwd(), "test", "files", "subdir", "c.txt"));
+  	test.equal(uploadFiles[4].file, path.join(process.cwd(), "test", "files", "subdir", "d.txt"));
+
+  	// Destinations don't have full path, but have subdir
+  	test.equal(uploadFiles[0].dest, "a.txt");
+  	test.equal(uploadFiles[1].dest, "b.txt");
+  	test.equal(uploadFiles[3].dest, path.join("subdir", "c.txt"));
+  	test.equal(uploadFiles[4].dest, path.join("subdir", "d.txt"));
+
+  	test.done();
+  },
+
   "_getConfig": function (test) {
 
   	// A fake grunt task
   	// TODO: Figure out if grunt has a way to mock this.
-  	var mockTask = {
-  		options: function(defaults) {
-  			return _.defaults({}, s3Config.options, defaults);
-  		},
-  		data: {
-  			upload: ["up1.txt", "up2.txt"],
-  			del: ["del1.txt", "del2.txt"]
-  		}
-  	};
+  	var mockTask = makeMockTask();
 
   	var oldVal = {
 		key: process.env.AWS_ACCESS_KEY_ID,
@@ -96,7 +127,7 @@ module.exports = {
   	process.env.AWS_ACCESS_KEY_ID = "testid";
   	process.env.AWS_SECRET_ACCESS_KEY = "secret";
     
-    var task = new S3Task(mockTask);
+    var task = new S3Task(mockTask, s3);
 
     var config = task._getConfig();
 
@@ -106,10 +137,7 @@ module.exports = {
 	test.equal(config.debug, false, "Debug");
 
 	// Test the data actions
-	test.equal(config.upload.length, 2, "Upload length");
-	test.equal(config.upload[0], "up1.txt", "Upload file 1");
-	test.equal(config.del.length, 2, "Del length");
-	test.equal(config.del[0], "del1.txt", "Del file 1");
+	test.equal(config.upload.length, 1, "Upload length");
 
 	// Testing things that are only in the default options.
 	test.equal(config.bucket, s3Config.options.bucket, "Bucket");

@@ -14,10 +14,7 @@ const zlib = require('zlib');
 // Npm.
 const knox = require('knox');
 const mime = require('mime');
-const async = require('async');
-const _ = require('underscore');
 const deferred = require('underscore.deferred');
-_.mixin(deferred);
 
 // Local
 const common = require('./common');
@@ -46,6 +43,11 @@ const MSG_ERR_COPY = 'Copy error: %s to %s';
 const MSG_ERR_CHECKSUM = '%s error: expected hash: %s but found %s for %s';
 
 exports.init = function (grunt) {
+  var async = grunt.util.async,
+      _ = grunt.util._;
+
+  _.mixin(deferred);
+
   var exports = {};
 
   /**
