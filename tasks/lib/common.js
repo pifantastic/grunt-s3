@@ -9,7 +9,7 @@ var fs = require('fs');
  */
 exports.hashFile = function(path) {
   return crypto.createHash('md5').update(fs.readFileSync(path)).digest('hex');
-}
+};
 
 /**
  * Clone an object.
@@ -18,4 +18,4 @@ exports.hashFile = function(path) {
  */
 exports.clone = function(obj) {
   return JSON.parse(JSON.stringify(obj || {}));
-}
+};

@@ -1,3 +1,5 @@
+/*jshint esnext:true*/
+/*globals module:true, require:true, process:true*/
 
 /**
  * Module dependencies.
@@ -61,7 +63,7 @@ exports.init = function (grunt) {
   var makeError = exports.makeError = function () {
     var msg = util.format.apply(util, _.toArray(arguments));
     return new Error(msg);
-  }
+  };
 
   /**
    * Publishes the local file at src to the s3 dest.

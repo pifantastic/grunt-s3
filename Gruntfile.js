@@ -3,7 +3,7 @@ var path = require("path");
 module.exports = function(grunt) {
 
   grunt.initConfig({
-    jshint : ['tasks/*.js'],
+    jshint : ['tasks/**/*.js'],
     nodeunit: {
       all: ['test/upload.js', 'test/download.js', 'test/s3Task.js']
     },
