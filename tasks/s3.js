@@ -29,7 +29,7 @@ module.exports = function (grunt) {
    * Uses global s3 grunt config.
    */
   grunt.registerMultiTask('s3', 'Publishes files to s3.', function () {
-    var task = new S3Task(this, s3, grunt.log.writeln);
+    var task = new S3Task(this, s3);
 
     task.run();
   });

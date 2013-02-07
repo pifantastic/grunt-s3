@@ -4,7 +4,6 @@ var grunt = require("grunt"),
     _ = grunt.util._,
     async = grunt.util.async;
 
-
 var S3Task = function(origTask, s3) {
     this._origTask = origTask;
     this.s3 = s3;
