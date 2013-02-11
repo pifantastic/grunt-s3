@@ -73,9 +73,9 @@ exports.init = function (grunt) {
     var config = grunt.config('s3') || {};
 
     // Look for and process grunt template stings
-    var keys = ['key', 'secret', 'bucket'];
+    var keys = ['key', 'secret', 'bucket', 'maxOperations'];
     keys.forEach(function(key) {
-      if (config.hasOwnProperty(key)) {
+      if (config.hasOwnProperty(key) && typeof config[key] == 'string') {
         config[key] = grunt.template.process(config[key]);
       }
     });
@@ -83,7 +83,8 @@ exports.init = function (grunt) {
     // Default to environment variables for s3 key/secret.
     return common.clone(_.defaults(config, {
       key : process.env.AWS_ACCESS_KEY_ID,
-      secret : process.env.AWS_SECRET_ACCESS_KEY
+      secret : process.env.AWS_SECRET_ACCESS_KEY,
+      maxOperations : 0
     }));
   }
 

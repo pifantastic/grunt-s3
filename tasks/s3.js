@@ -20,6 +20,7 @@ module.exports = function (grunt) {
    * Grunt aliases.
    */
   const _ = grunt.util._;
+  const async = grunt.util.async;
   const log = grunt.log;
 
   /**
@@ -68,43 +69,47 @@ module.exports = function (grunt) {
           }
         }
 
-        transfers.push(s3.upload(file, dest, upload));
+        transfers.push(s3.upload.bind(s3,file, dest, upload));
       });
     });
 
     config.download.forEach(function(download) {
-      transfers.push(s3.download(download.src, download.dest, download));
+      transfers.push(s3.download.bind(s3,download.src, download.dest, download));
     });
 
     config.del.forEach(function(del) {
-      transfers.push(s3.del(del.src, del));
+      transfers.push(s3.del.bind(s3,del.src, del));
     });
 
     config.copy.forEach(function(copy) {
-      transfers.push(s3.copy(copy.src, copy.dest, copy));
+      transfers.push(s3.copy.bind(s3,copy.src, copy.dest, copy));
     });
 
-    var total = transfers.length;
     var errors = 0;
 
-    // Keep a running total of errors/completions as the transfers complete.
-    transfers.forEach(function(transfer) {
+    var eachTransfer = config.maxOperations > 0
+      ? async.forEachLimit.bind(async,transfers,config.maxOperations)
+      : async.forEach.bind(async,transfers)
+    
+    eachTransfer(function(transferFn,completed){
+      var transfer = transferFn()
+      
       transfer.done(function(msg) {
         log.ok(msg);
-      });
-
+        completed()
+      })
+      
       transfer.fail(function(msg) {
+        console.log(msg.stack)
         log.error(msg);
         ++errors;
-      });
-
-      transfer.always(function() {
-        // If this was the last transfer to complete, we're all done.
-        if (--total === 0) {
-          done(!errors);
-        }
-      });
-    });
+        completed()
+      })
+      
+    },function(){
+      console.log('COMPLETED')
+      // we're all done.
+      done(!errors);
+    })
   });
-
 };
