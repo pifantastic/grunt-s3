@@ -68,6 +68,7 @@ module.exports = function (grunt) {
             dest = path.join(destPath, path.basename(file));
           }
         }
+        if(config.encodePaths === true) dest = encodeURIComponent(dest)
 
         transfers.push(s3.upload.bind(s3,file, dest, upload));
       });
@@ -100,14 +101,12 @@ module.exports = function (grunt) {
       })
       
       transfer.fail(function(msg) {
-        console.log(msg.stack)
         log.error(msg);
         ++errors;
         completed()
       })
       
     },function(){
-      console.log('COMPLETED')
       // we're all done.
       done(!errors);
     })
