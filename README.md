@@ -33,6 +33,8 @@ grunt.loadNpmTasks('grunt-s3');
 * **key** - (*string*) An Amazon S3 credentials key
 * **secret** - (*string*) An Amazon S3 credentials secret
 * **bucket** - (*string*) An Amazon S3 bucket
+* **maxOperations** - (*number*) max number of concurrent transfers - if not specified or set to 0, will be unlimited.
+* **encodePaths** - (*boolean*) if set to true, will encode the uris of destinations to prevent 505 errors. Default: false
 * **headers** - (*object*) An object containing any headers you would like to send along with the
 transfers i.e. `{ 'X-Awesomeness': 'Out-Of-This-World', 'X-Stuff': 'And Things!' }`
 * **access** - (*string*) A specific Amazon S3 ACL. Available values: `private`, `public-read`, `
