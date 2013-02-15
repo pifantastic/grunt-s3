@@ -13,6 +13,7 @@
 
 module.exports = function (grunt) {
 
+  const s3 = require('./lib/s3').init(grunt);
   const S3Task = require("./lib/s3Task");
 
   /**
