@@ -13,15 +13,7 @@
 
 module.exports = function (grunt) {
 
-  const path = require('path');
-  const s3 = require('./lib/s3').init(grunt);
   const S3Task = require("./lib/s3Task");
-
-  /**
-   * Grunt aliases.
-   */
-  const _ = grunt.util._;
-  const log = grunt.log;
 
   /**
    * Transfer files to/from s3.
@@ -33,5 +25,4 @@ module.exports = function (grunt) {
 
     task.run();
   });
-
 };

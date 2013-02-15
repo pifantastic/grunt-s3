@@ -143,6 +143,10 @@ module.exports = {
     test.equal(config.bucket, s3Config.options.bucket, "Bucket");
     test.equal(config.endpoint, s3Config.options.endpoint, "Endpoint");
 
+    // Newly added options
+    test.equal(config.maxOperations, 0, "Defaults max operations to 0");
+    test.equal(config.encodePaths, false, "Defaults encodePaths to false");
+
     // Be a good citizen and reset these.
     process.env.AWS_ACCESS_KEY_ID = oldVal.key;
     process.env.AWS_SECRET_ACCESS_KEY = oldVal.secret;

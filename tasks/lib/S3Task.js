@@ -29,42 +29,46 @@ S3Task.prototype = {
             var uploadFiles = self._parseUploadFiles(upload, config);
 
             uploadFiles.forEach(function(uploadFile) {
-                transfers.push(s3.upload(uploadFile.file, uploadFile.dest, uploadFile.upload));
+                transfers.push(s3.upload.bind(s3, uploadFile.file, uploadFile.dest, uploadFile.upload));
             });
         });
 
         config.download.forEach(function(download) {
-          transfers.push(s3.download(download.src, download.dest, download));
+          transfers.push(s3.download.bind(s3,download.src, download.dest, download));
         });
 
         config.del.forEach(function(del) {
-          transfers.push(s3.del(del.src, del));
+          transfers.push(s3.del.bind(s3,del.src, del));
         });
 
         config.copy.forEach(function(copy) {
-          transfers.push(s3.copy(copy.src, copy.dest, copy));
+          transfers.push(s3.copy.bind(s3,copy.src, copy.dest, copy));
         });
 
         var total = transfers.length;
         var errors = 0;
 
-        // Keep a running total of errors/completions as the transfers complete.
-        transfers.forEach(function(transfer) {
+        var eachTransfer = config.maxOperations > 0 ? 
+          async.forEachLimit.bind(async,transfers,config.maxOperations)
+          : async.forEach.bind(async,transfers);
+        
+        eachTransfer(function(transferFn, completed){
+          var transfer = transferFn();
+          
           transfer.done(function(msg) {
             grunt.log.ok(msg);
+            completed();
           });
-
+          
           transfer.fail(function(msg) {
             grunt.log.error(msg);
             ++errors;
+            completed();
           });
-
-          transfer.always(function() {
-            // If this was the last transfer to complete, we're all done.
-            if (--total === 0) {
-              done(!errors);
-            }
-          });
+          
+        },function(){
+          // we're all done.
+          done(!errors);
         });
     },
 
@@ -96,6 +100,10 @@ S3Task.prototype = {
               }
             }
 
+            if(config.encodePaths === true) {
+              dest = encodeURIComponent(dest);
+            }
+
             return {file: file, dest: dest, upload: upload};
         });
     },
@@ -105,7 +113,9 @@ S3Task.prototype = {
         var opts = this._origTask.options({
           key : process.env.AWS_ACCESS_KEY_ID,
           secret : process.env.AWS_SECRET_ACCESS_KEY,
-          debug: false
+          debug: false,
+          maxOperations: 0,
+          encodePaths: false
         });
 
         // Grab the actions to perform from the task data, default to empty arrays
