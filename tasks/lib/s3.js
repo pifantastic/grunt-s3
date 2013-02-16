@@ -1,3 +1,5 @@
+/*jshint esnext:true*/
+/*globals module:true, require:true, process:true*/
 
 /**
  * Module dependencies.
@@ -61,33 +63,7 @@ exports.init = function (grunt) {
   var makeError = exports.makeError = function () {
     var msg = util.format.apply(util, _.toArray(arguments));
     return new Error(msg);
-  }
-
-  /**
-   * Get the grunt s3 configuration options, filling in options from
-   * environment variables if present. Also supports grunt template strings.
-   *
-   * @returns {Object} The s3 configuration.
-   */
-  var getConfig = exports.getConfig = function () {
-    var config = grunt.config('s3') || {};
-
-    // Look for and process grunt template stings
-    var keys = ['key', 'secret', 'bucket', 'maxOperations', 'encodePaths'];
-    keys.forEach(function(key) {
-      if (config.hasOwnProperty(key) && typeof config[key] == 'string') {
-        config[key] = grunt.template.process(config[key]);
-      }
-    });
-
-    // Default to environment variables for s3 key/secret.
-    return common.clone(_.defaults(config, {
-      key : process.env.AWS_ACCESS_KEY_ID,
-      secret : process.env.AWS_SECRET_ACCESS_KEY,
-      maxOperations : 0,
-      encodePaths : false
-    }));
-  }
+  };
 
   /**
    * Publishes the local file at src to the s3 dest.
@@ -103,14 +79,14 @@ exports.init = function (grunt) {
    */
   exports.put = exports.upload = function (src, dest, opts) {
     var dfd = new _.Deferred();
-    var options = common.clone(opts);
+    var options = _.clone(opts);
 
     // Make sure the local file exists.
     if (!existsSync(src)) {
       return dfd.reject(makeError(MSG_ERR_NOT_FOUND, src));
     }
 
-    var config = _.defaults(options, getConfig());
+    var config = options;
     var headers = options.headers || {};
 
     if (options.access) {
@@ -236,8 +212,8 @@ exports.init = function (grunt) {
    */
   exports.pull = exports.download = function (src, dest, opts) {
     var dfd = new _.Deferred();
-    var options = common.clone(opts);
-    var config = _.defaults(options, getConfig());
+    var options = _.clone(opts);
+    var config = options;
 
     // Pick out the configuration options we need for the client.
     var client = knox.createClient(_(config).pick([
@@ -309,7 +285,7 @@ exports.init = function (grunt) {
    */
   exports.copy = function (src, dest, opts) {
     var dfd = new _.Deferred();
-    var options = common.clone(opts);
+    var options = _.clone(opts);
     var config = _.defaults(options, getConfig());
 
     // Pick out the configuration options we need for the client.
@@ -356,7 +332,7 @@ exports.init = function (grunt) {
    */
   exports.del = function (src, opts) {
     var dfd = new _.Deferred();
-    var options = common.clone(opts);
+    var options = _.clone(opts);
     var config = _.defaults(options, getConfig());
 
     // Pick out the configuration options we need for the client.

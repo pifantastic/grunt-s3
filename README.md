@@ -28,7 +28,11 @@ Then add this line to your project's `Gruntfile.js`:
 grunt.loadNpmTasks('grunt-s3');
 ```
 
-## Configuration
+## Options
+
+The grunt-s3 task is now a [multi-task](https://github.com/gruntjs/grunt/wiki/Creating-tasks); meaning you can specify different targets for this task to run as.  
+
+The following are the default options available to each target.
 
 * **key** - (*string*) An Amazon S3 credentials key
 * **secret** - (*string*) An Amazon S3 credentials secret
@@ -54,56 +58,65 @@ the above values may also be overriden.
 grunt.initConfig({
 
   s3: {
-    key: 'YOUR KEY',
-    secret: 'YOUR SECRET',
-    bucket: 'my-bucket',
-    access: 'public-read',
-
-    // Files to be uploaded.
-    upload: [
-      {
-        src: 'important_document.txt',
-        dest: 'documents/important.txt',
-        gzip: true
+    options: {
+      key: 'YOUR KEY',
+      secret: 'YOUR SECRET',
+      bucket: 'my-bucket',
+      access: 'public-read'
+    },
+    dev: {
+      // These options override the defaults
+      options: {
+        encodePaths: true,
+        maxOperations: 20
       },
-      {
-        src: 'passwords.txt',
-        dest: 'documents/ignore.txt',
+      // Files to be uploaded.
+      upload: [
+        {
+          src: 'important_document.txt',
+          dest: 'documents/important.txt',
+          gzip: true
+        },
+        {
+          src: 'passwords.txt',
+          dest: 'documents/ignore.txt',
 
-        // These values will override the above settings.
-        bucket: 'some-specific-bucket',
-        access: 'authenticated-read'
-      },
-      {
-        // Wildcards are valid *for uploads only* until I figure out a good implementation
-        // for downloads.
-        src: 'documents/*.txt',
+          // These values will override the above settings.
+          bucket: 'some-specific-bucket',
+          access: 'authenticated-read'
+        },
+        {
+          // Wildcards are valid *for uploads only* until I figure out a good implementation
+          // for downloads.
+          src: 'documents/*.txt',
 
-        // But if you use wildcards, make sure your destination is a directory.
-        dest: 'documents/'
-      }
-    ],
+          // But if you use wildcards, make sure your destination is a directory.
+          dest: 'documents/'
+        }
+      ],
 
-    // Files to be downloaded.
-    download: [
-      {
-        src: 'documents/important.txt',
-        dest: 'important_document_download.txt'
-      },
-      {
-        src: 'garbage/IGNORE.txt',
-        dest: 'passwords_download.txt'
-      }
-    ],
+      // Files to be downloaded.
+      download: [
+        {
+          src: 'documents/important.txt',
+          dest: 'important_document_download.txt'
+        },
+        {
+          src: 'garbage/IGNORE.txt',
+          dest: 'passwords_download.txt'
+        }
+      ],
 
-    del: [
-      {
-        src: 'documents/launch_codes.txt'
-      },
-      {
-        src: 'documents/backup_plan.txt'
-      }
-    ]
+      del: [
+        {
+          src: 'documents/launch_codes.txt'
+        },
+        {
+          src: 'documents/backup_plan.txt'
+        }
+      ]
+    }
+    
   }
 
 });
