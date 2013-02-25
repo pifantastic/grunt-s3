@@ -79,7 +79,7 @@ exports.init = function (grunt) {
    */
   exports.put = exports.upload = function (src, dest, opts) {
     var dfd = new _.Deferred();
-    var options = _.clone(opts);
+    var options = _.clone(opts, true);
 
     // Make sure the local file exists.
     if (!existsSync(src)) {
@@ -104,7 +104,7 @@ exports.init = function (grunt) {
 
     // Encapsulate this logic to make it easier to gzip the file first if
     // necesssary.
-    function upload(cb) {
+    var upload = function (cb) {
       cb = cb || function () {};
 
       // Upload the file to s3.
@@ -139,7 +139,7 @@ exports.init = function (grunt) {
           });
         }
       });
-    }
+    };
 
     // If gzip is enabled, gzip the file into a temp file and then perform the
     // upload.
