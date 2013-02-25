@@ -139,7 +139,7 @@ exports.init = function (grunt) {
           });
         }
       });
-    }
+    };
 
     // If gzip is enabled, gzip the file into a temp file and then perform the
     // upload.
