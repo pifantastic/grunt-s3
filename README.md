@@ -37,6 +37,7 @@ The following are the default options available to each target.
 * **key** - (*string*) An Amazon S3 credentials key
 * **secret** - (*string*) An Amazon S3 credentials secret
 * **bucket** - (*string*) An Amazon S3 bucket
+* **region** - (*string*) An Amazon AWS region (see http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region)
 * **maxOperations** - (*number*) max number of concurrent transfers - if not specified or set to 0, will be unlimited.
 * **encodePaths** - (*boolean*) if set to true, will encode the uris of destinations to prevent 505 errors. Default: false
 * **headers** - (*object*) An object containing any headers you would like to send along with the
