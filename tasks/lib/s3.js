@@ -95,7 +95,7 @@ exports.init = function (grunt) {
 
     // Pick out the configuration options we need for the client.
     var client = knox.createClient(_(config).pick([
-      'endpoint', 'port', 'key', 'secret', 'access', 'bucket', 'secure'
+      'region', 'endpoint', 'port', 'key', 'secret', 'access', 'bucket', 'secure'
     ]));
 
     if (config.debug) {
@@ -217,7 +217,7 @@ exports.init = function (grunt) {
 
     // Pick out the configuration options we need for the client.
     var client = knox.createClient(_(config).pick([
-      'endpoint', 'port', 'key', 'secret', 'access', 'bucket'
+      'region', 'endpoint', 'port', 'key', 'secret', 'access', 'bucket'
     ]));
 
     if (config.debug) {
@@ -290,7 +290,7 @@ exports.init = function (grunt) {
 
     // Pick out the configuration options we need for the client.
     var client = knox.createClient(_(config).pick([
-      'endpoint', 'port', 'key', 'secret', 'access', 'bucket'
+      'region', 'endpoint', 'port', 'key', 'secret', 'access', 'bucket'
     ]));
 
     if (config.debug) {
@@ -337,7 +337,7 @@ exports.init = function (grunt) {
 
     // Pick out the configuration options we need for the client.
     var client = knox.createClient(_(config).pick([
-      'endpoint', 'port', 'key', 'secret', 'access', 'bucket'
+      'region', 'endpoint', 'port', 'key', 'secret', 'access', 'bucket'
     ]));
 
     if (config.debug) {

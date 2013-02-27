@@ -37,6 +37,7 @@ The following are the default options available to each target.
 * **key** - (*string*) An Amazon S3 credentials key
 * **secret** - (*string*) An Amazon S3 credentials secret
 * **bucket** - (*string*) An Amazon S3 bucket
+* **region** - (*string*) An Amazon AWS region (see http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region)
 * **maxOperations** - (*number*) max number of concurrent transfers - if not specified or set to 0, will be unlimited.
 * **encodePaths** - (*boolean*) if set to true, will encode the uris of destinations to prevent 505 errors. Default: false
 * **headers** - (*object*) An object containing any headers you would like to send along with the
@@ -51,6 +52,7 @@ and a `dest`. Any of the above values may also be overriden.
 * **del** - (*array*) An array of objects, each object containing a `src` to delete from s3. Any of
 the above values may also be overriden.
 * **debug** - (*boolean*) If true, no transfers with S3 will occur, will print all actions for review by user
+      'region', 'endpoint', 'port', 'key', 'secret', 'access', 'bucket', 'secure'
 
 ### Example
 
