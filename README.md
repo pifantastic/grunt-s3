@@ -52,7 +52,6 @@ and a `dest`. Any of the above values may also be overriden.
 * **del** - (*array*) An array of objects, each object containing a `src` to delete from s3. Any of
 the above values may also be overriden.
 * **debug** - (*boolean*) If true, no transfers with S3 will occur, will print all actions for review by user
-      'region', 'endpoint', 'port', 'key', 'secret', 'access', 'bucket', 'secure'
 
 ### Example
 
