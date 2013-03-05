@@ -141,9 +141,16 @@ exports.init = function (grunt) {
       });
     };
 
-    // If gzip is enabled, gzip the file into a temp file and then perform the
-    // upload.
-    if (options.gzip) {
+    // prepare gzip exclude option
+    var gzipExclude = options.gzipExclude || [];
+    if (!_.isArray(gzipExclude)) {
+      gzipExclude = [];
+    }
+
+    // If gzip is enabled and file not in gzip exclude array,
+    // gzip the file into a temp file and then perform the upload.
+    if (options.gzip && gzipExclude.indexOf(path.extname(src)) === -1) {
+
       headers['Content-Encoding'] = 'gzip';
       headers['Content-Type'] = mime.lookup(src);
 

@@ -30,7 +30,7 @@ grunt.loadNpmTasks('grunt-s3');
 
 ## Options
 
-The grunt-s3 task is now a [multi-task](https://github.com/gruntjs/grunt/wiki/Creating-tasks); meaning you can specify different targets for this task to run as.  
+The grunt-s3 task is now a [multi-task](https://github.com/gruntjs/grunt/wiki/Creating-tasks); meaning you can specify different targets for this task to run as.
 
 The following are the default options available to each target.
 
@@ -45,6 +45,7 @@ transfers i.e. `{ 'X-Awesomeness': 'Out-Of-This-World', 'X-Stuff': 'And Things!'
 * **access** - (*string*) A specific Amazon S3 ACL. Available values: `private`, `public-read`, `
 public-read-write`, `authenticated-read`, `bucket-owner-read`, `bucket-owner-full-control`
 * **gzip** - (*boolean*) If true, uploads will be gzip-encoded.
+* **gzipExclude** - (*array*) Define extensions of files you don't want to run gzip on, an array of strings ie: `['.jpg', '.jpeg', '.png']`.
 * **upload** - (*array*) An array of objects, each object representing a file upload and containing a `src`
 and a `dest`. Any of the above values may also be overriden.
 * **download** - (*array*) An array of objects, each object representing a file download and containing a
@@ -117,7 +118,7 @@ grunt.initConfig({
         }
       ]
     }
-    
+
   }
 
 });
