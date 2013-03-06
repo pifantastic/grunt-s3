@@ -17,7 +17,7 @@
       "url": "https://github.com/pifantastic/grunt-s3/blob/master/LICENSE"
     }
   ],
-  "main": "Gruntfile.js",
+  "main": "tasks/s3",
   "bin": "bin/grunt-s3",
   "scripts": {
     "test": "grunt test"
