@@ -13,8 +13,18 @@
 
 module.exports = function (grunt) {
 
-  const s3 = require('./lib/s3').init(grunt);
-  const S3Task = require("./lib/S3Task");
+  var s3 = require('./lib/s3');
+  const S3Task = require('./lib/S3Task');
+
+  // if grunt is not provided, then expose internal API
+  if ('object' !== typeof(grunt)) {
+    return {
+      s3: s3,
+      S3Task: S3Task
+    };
+  }
+
+  s3 = s3.init(grunt);
 
   /**
    * Transfer files to/from s3.

@@ -56,7 +56,7 @@ module.exports = {
 
         uploadFiles.push(dest);
 
-        setTimeout(function() { 
+        setTimeout(function() {
             def.resolve();
         }, 10);
 
@@ -89,7 +89,7 @@ module.exports = {
 
     var task = new S3Task(mockTask, s3);
 
-    var config = task._getConfig();
+    var config = task.getConfig();
 
     test.equal(config.upload.length, 1, "Has upload to parse");
 
@@ -112,7 +112,7 @@ module.exports = {
     test.done();
   },
 
-  "_getConfig": function (test) {
+  "getConfig": function (test) {
 
     // A fake grunt task
     // TODO: Figure out if grunt has a way to mock this.
@@ -126,10 +126,10 @@ module.exports = {
     // Making sure we choose the options over the process key
     process.env.AWS_ACCESS_KEY_ID = "testid";
     process.env.AWS_SECRET_ACCESS_KEY = "secret";
-    
+
     var task = new S3Task(mockTask, s3);
 
-    var config = task._getConfig();
+    var config = task.getConfig();
 
     // Test the custom things first
     test.equal(config.key, s3Config.options.key, "Key");
