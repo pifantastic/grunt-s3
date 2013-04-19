@@ -152,7 +152,7 @@ exports.init = function (grunt) {
     if (options.gzip && gzipExclude.indexOf(path.extname(src)) === -1) {
 
       headers['Content-Encoding'] = 'gzip';
-      headers['Content-Type'] = mime.lookup(src);
+      headers['Content-Type'] = headers['Content-Type'] || mime.lookup(src);
 
       var charset = mime.charsets.lookup(headers['Content-Type'], null);
       if (charset) {
