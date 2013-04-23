@@ -173,7 +173,13 @@ environment variables:
 
 ## Helpers
 
-### grunt.helper('s3.put', src, dest, options)
+Helpers have been removed from Grunt 0.4 to access these methods directly. You can now require the s3 library files directly like so:
+
+`var s3 = require('grunt-s3/tasks/lib/s3').init(grunt);`
+
+Make sure you explicitly pass the options into the method. If you've used `grunt.initConfig()` you can use `grunt.config.get('s3')` to access them.
+
+### s3.put(src, dest, options)
 
 Upload a file to s3. Returns a Promises/J-style Deferred object.
 
@@ -193,7 +199,7 @@ any values specified in the main config.
 `authenticated-read`, `bucket-owner-read`, `bucket-owner-full-control`
 * **gzip** - (*boolean*) If true, uploads will be gzip-encoded.
 
-### grunt.helper('s3.pull', src, dest, options)
+### s3.pull(src, dest, options)
 Download a file from s3. Returns a Promises/J-style Deferred object.
 
 **src** (required) - The path on S3 from which the file will be downloaded, relative to the bucket. **Does not accept wildcards**
@@ -208,7 +214,7 @@ any values specified in the main config.
 * **bucket** - An Amazon S3 bucket
 * **headers** - An object containing any headers you would like to send along with the upload.
 
-### grunt.helper('s3.delete', src, options)
+### s3.delete(src, options)
 
 Delete a file from s3. Returns a Promises/J-style Deferred object.
 
@@ -225,7 +231,7 @@ any values specified in the main config.
 ### Examples
 
 ```javascript
-var upload = grunt.helper('s3.put', 'dist/my-app-1.0.0.tar.gz', 'archive/my-app-1.0.0.tar.gz');
+var upload = s3.put('dist/my-app-1.0.0.tar.gz', 'archive/my-app-1.0.0.tar.gz');
 
 upload
   .done(function(msg) {
@@ -238,10 +244,10 @@ upload
     console.log('dance!');
   });
 
-var download = grunt.helper('s3.pull', 'dist/my-app-0.9.9.tar.gz', 'local/my-app-0.9.9.tar.gz');
+var download = s3.pull('dist/my-app-0.9.9.tar.gz', 'local/my-app-0.9.9.tar.gz');
 
 download.done(function() {
-  grunt.helper('s3.delete', 'dist/my-app-0.9.9.tar.gz');
+  s3.delete('dist/my-app-0.9.9.tar.gz');
 });
 
 ```
