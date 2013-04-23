@@ -151,7 +151,7 @@ demonstrates loading aws settings from another file.
 
 ```javascript
 grunt.initConfig({
-  aws: '<json:grunt-aws.json>',
+  aws: grunt.file.readJSON('grunt-aws.json'),
   s3: {
     key: '<%= aws.key %>',
     secret: '<%= aws.secret %>',
