@@ -1,9 +1,9 @@
-var path = require("path");
+var path = require('path');
 
-module.exports = function(grunt) {
+module.exports = function (grunt) {
 
   grunt.initConfig({
-    jshint : ['tasks/**/*.js'],
+    jshint: ['tasks/**/*.js'],
     nodeunit: {
       all: ['test/upload.js', 'test/download.js', 'test/s3Task.js']
     },
@@ -27,8 +27,8 @@ module.exports = function(grunt) {
       },
       test_S3Task: {
         upload: [{
-          src: path.join(process.cwd(), "test", "files", "**", "*.txt"),
-          rel: path.join(process.cwd(), "test", "files")
+          src: path.join(process.cwd(), 'test', 'files', '**', '*.txt'),
+          rel: path.join(process.cwd(), 'test', 'files')
         }]
       }
     }
