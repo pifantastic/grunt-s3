@@ -38,6 +38,8 @@ var exportFn = function (grunt) {
   });
 };
 
-exportFn.helpers = s3.init(require('grunt'));
+exportFn.init = function (grunt) {
+  return s3.init(grunt);
+};
 
 module.exports = exportFn;
