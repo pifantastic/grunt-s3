@@ -34,7 +34,8 @@
     "grunt": "0.4.x",
     "underscore.deferred": "~0.1.4",
     "knox": "0.6.x",
-    "mime": "~1.2.5"
+    "mime": "~1.2.5",
+    "temporary": "0.0.5"
   },
   "devDependencies": {
     "nodeunit": "~0.7.4",
