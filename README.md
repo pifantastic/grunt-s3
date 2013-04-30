@@ -175,7 +175,7 @@ environment variables:
 
 Helpers have been removed from Grunt 0.4 to access these methods directly. You can now require the s3 library files directly like so:
 
-`var s3 = require('grunt-s3/tasks/lib/s3').init(grunt);`
+`var s3 = require('grunt-s3').helpers;`
 
 Make sure you explicitly pass the options into the method. If you've used `grunt.initConfig()` you can use `grunt.config.get('s3')` to access them.
 
