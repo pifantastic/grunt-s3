@@ -22,23 +22,23 @@ S3Task.prototype = {
       grunt.log.writeln();
     }
 
-    config.upload.forEach(function(upload) {
+    config.upload.forEach(function (upload) {
       var uploadFiles = self._parseUploadFiles(upload, config);
 
-      uploadFiles.forEach(function(uploadFile) {
+      uploadFiles.forEach(function (uploadFile) {
         transfers.push(s3.upload.bind(s3, uploadFile.file, uploadFile.dest, uploadFile.upload));
       });
     });
 
-    config.download.forEach(function(download) {
+    config.download.forEach(function (download) {
       transfers.push(s3.download.bind(s3,download.src, download.dest, download));
     });
 
-    config.del.forEach(function(del) {
+    config.del.forEach(function (del) {
       transfers.push(s3.del.bind(s3,del.src, del));
     });
 
-    config.copy.forEach(function(copy) {
+    config.copy.forEach(function (copy) {
       transfers.push(s3.copy.bind(s3,copy.src, copy.dest, copy));
     });
 
@@ -49,15 +49,15 @@ S3Task.prototype = {
       async.forEachLimit.bind(async,transfers,config.maxOperations) :
       async.forEach.bind(async,transfers);
 
-    eachTransfer(function(transferFn, completed){
+    eachTransfer(function (transferFn, completed){
       var transfer = transferFn();
 
-      transfer.done(function(msg) {
+      transfer.done(function (msg) {
         grunt.log.ok(msg);
         completed();
       });
 
-      transfer.fail(function(msg) {
+      transfer.fail(function (msg) {
         grunt.log.error(msg);
         ++errors;
         completed();
@@ -68,7 +68,7 @@ S3Task.prototype = {
     });
   },
 
-  _parseUploadFiles: function(upload, config) {
+  _parseUploadFiles: function (upload, config) {
     // Expand list of files to upload.
     var files = grunt.file.expand({ filter: 'isFile' }, upload.src);
     var destPath = grunt.template.process(upload.dest || '');
@@ -119,7 +119,7 @@ S3Task.prototype = {
    *   will ignore defaults.
    * @return {Object} A normalized configuration.
    */
-  getConfig: function(optOptions, optData) {
+  getConfig: function (optOptions, optData) {
     // Grab the options for this task.
     var opts = optOptions || this._origTask.options();
 
