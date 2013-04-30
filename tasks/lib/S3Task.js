@@ -77,8 +77,8 @@ S3Task.prototype = {
       file = path.resolve(file);
       upload.src = path.resolve(grunt.template.process(upload.src));
 
-      // Put the key, secret and bucket information into the upload for knox
-      _.extend(upload, config);
+      // Put the key, secret and bucket information into the upload for knox.
+      var fileConfig = _.extend({}, config, upload.options || {});
 
       // If there is only 1 file and it matches the original file wildcard,
       // we know this is a single file transfer. Otherwise, we need to build
@@ -105,7 +105,7 @@ S3Task.prototype = {
       return {
         file: file,
         dest: dest,
-        upload: upload
+        upload: fileConfig
       };
     });
   },
