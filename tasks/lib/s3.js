@@ -45,8 +45,8 @@ const MSG_ERR_COPY = 'Copy error: %s to %s';
 const MSG_ERR_CHECKSUM = '%s error: expected hash: %s but found %s for %s';
 
 exports.init = function (grunt) {
-  var async = grunt.util.async,
-      _ = grunt.util._;
+  var async = grunt.util.async;
+  var _ = grunt.util._;
 
   _.mixin(deferred);
 
@@ -150,7 +150,6 @@ exports.init = function (grunt) {
     // If gzip is enabled and file not in gzip exclude array,
     // gzip the file into a temp file and then perform the upload.
     if (options.gzip && gzipExclude.indexOf(path.extname(src)) === -1) {
-
       headers['Content-Encoding'] = 'gzip';
       headers['Content-Type'] = headers['Content-Type'] || mime.lookup(src);
 
@@ -306,7 +305,7 @@ exports.init = function (grunt) {
 
     var headers = {
       'Content-Length': 0,
-      'x-amz-copy-source' : src
+      'x-amz-copy-source': src
     };
 
     if (options.headers) {

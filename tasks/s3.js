@@ -14,10 +14,10 @@
 module.exports = function (grunt) {
 
   var s3 = require('./lib/s3');
-  const S3Task = require('./lib/S3Task');
+  var S3Task = require('./lib/S3Task');
 
-  // if grunt is not provided, then expose internal API
-  if ('object' !== typeof(grunt)) {
+  // If grunt is not provided, then expose internal API.
+  if (typeof grunt !== 'object') {
     return {
       s3: s3,
       S3Task: S3Task
