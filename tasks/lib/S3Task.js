@@ -110,39 +110,39 @@ S3Task.prototype = {
     });
   },
 
-    /**
-     * Return the config, allow for arbitrary options that don't originate
-     * from grunt.
-     *
-     * @param  {Object=} optOptions optionally define an options object.
-     * @param  {Object=} optData optionally define file actions,
-     *   will ignore defaults.
-     * @return {Object} A normalized configuration.
-     */
-    getConfig: function(optOptions, optData) {
-      // Grab the options for this task.
-      var opts = optOptions || this._origTask.options();
+  /**
+   * Return the config, allow for arbitrary options that don't originate
+   * from grunt.
+   *
+   * @param  {Object=} optOptions optionally define an options object.
+   * @param  {Object=} optData optionally define file actions,
+   *   will ignore defaults.
+   * @return {Object} A normalized configuration.
+   */
+  getConfig: function(optOptions, optData) {
+    // Grab the options for this task.
+    var opts = optOptions || this._origTask.options();
 
-      var defaultOpts = {
-        key: process.env.AWS_ACCESS_KEY_ID,
-        secret: process.env.AWS_SECRET_ACCESS_KEY,
-        debug: false,
-        maxOperations: 0,
-        encodePaths: false
-      };
+    var defaultOpts = {
+      key: process.env.AWS_ACCESS_KEY_ID,
+      secret: process.env.AWS_SECRET_ACCESS_KEY,
+      debug: false,
+      maxOperations: 0,
+      encodePaths: false
+    };
 
-      // Grab the actions to perform from the task data, default to empty arrays
-      var fileActions = optData || this._origTask.data;
-      var defaultFileActions = {
-        upload: [],
-        download: [],
-        del: [],
-        copy: []
-      };
+    // Grab the actions to perform from the task data, default to empty arrays
+    var fileActions = optData || this._origTask.data;
+    var defaultFileActions = {
+      upload: [],
+      download: [],
+      del: [],
+      copy: []
+    };
 
-      // Combine the options and fileActions as the config
-      return _.extend({}, defaultOpts, defaultFileActions, opts, fileActions);
-    }
+    // Combine the options and fileActions as the config
+    return _.extend({}, defaultOpts, defaultFileActions, opts, fileActions);
+  }
 };
 
 module.exports = S3Task;
