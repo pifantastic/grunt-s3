@@ -17,6 +17,7 @@ const zlib = require('zlib');
 const knox = require('knox');
 const mime = require('mime');
 const deferred = require('underscore.deferred');
+var Tempfile = require('temporary/lib/file');
 
 // Local
 const common = require('./common');
@@ -158,15 +159,9 @@ exports.init = function (grunt) {
         headers['Content-Type'] += '; charset=' + charset;
       }
 
-      // Determine a unique temp file name.
-      var tmp = src + '.gz';
-      var incr = 0;
-      while (existsSync(tmp)) {
-        tmp = src + '.' + (incr++) + '.gz';
-      }
-
+      var tmp = new Tempfile();
       var input = fs.createReadStream(src);
-      var output = fs.createWriteStream(tmp);
+      var output = fs.createWriteStream(tmp.path);
 
       // Gzip the file and upload when done.
       input.pipe(zlib.createGzip()).pipe(output)
@@ -175,10 +170,10 @@ exports.init = function (grunt) {
         })
         .on('close', function () {
           // Update the src to point to the newly created .gz file.
-          src = tmp;
+          src = tmp.path;
           upload(function (err, msg) {
             // Clean up the temp file.
-            fs.unlinkSync(tmp);
+            tmp.unlinkSync();
 
             if (err) {
               dfd.reject(err);
