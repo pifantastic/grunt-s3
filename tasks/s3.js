@@ -11,9 +11,9 @@
  *
  */
 
-module.exports = function (grunt) {
+var s3 = require('./lib/s3');
 
-  var s3 = require('./lib/s3');
+var exportFn = function (grunt) {
   var S3Task = require('./lib/S3Task');
 
   // If grunt is not provided, then expose internal API.
@@ -37,3 +37,9 @@ module.exports = function (grunt) {
     task.run();
   });
 };
+
+exportFn.init = function (grunt) {
+  return s3.init(grunt);
+};
+
+module.exports = exportFn;
