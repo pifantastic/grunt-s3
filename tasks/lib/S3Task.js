@@ -31,15 +31,15 @@ S3Task.prototype = {
     });
 
     config.download.forEach(function (download) {
-      transfers.push(s3.download.bind(s3,download.src, download.dest, download));
+      transfers.push(s3.download.bind(s3, download.src, download.dest, _(download).defaults(config)));
     });
 
     config.del.forEach(function (del) {
-      transfers.push(s3.del.bind(s3,del.src, del));
+      transfers.push(s3.del.bind(s3, del.src, _(del).defaults(config)));
     });
 
     config.copy.forEach(function (copy) {
-      transfers.push(s3.copy.bind(s3,copy.src, copy.dest, copy));
+      transfers.push(s3.copy.bind(s3, copy.src, copy.dest, _(copy).defaults(config)));
     });
 
     var total = transfers.length;
