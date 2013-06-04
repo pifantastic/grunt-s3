@@ -30,7 +30,7 @@ module.exports = function (grunt) {
           src: path.join(process.cwd(), 'test', 'files', '**', '*.txt'),
           rel: path.join(process.cwd(), 'test', 'files'),
           options: {
-            bucket: 'overriden'
+            bucket: 'overridden'
           }
         }]
       }
