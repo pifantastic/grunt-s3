@@ -33,7 +33,7 @@
   "dependencies": {
     "grunt": "0.4.x",
     "underscore.deferred": "~0.1.4",
-    "knox": "0.6.x",
+    "knox": "0.8.x",
     "mime": "~1.2.5",
     "temporary": "0.0.5"
   },
