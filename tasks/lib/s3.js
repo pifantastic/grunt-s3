@@ -6,44 +6,44 @@
  */
 
 // Core.
-const util = require('util');
-const crypto = require('crypto');
-const fs = require('fs');
-const path = require('path');
-const url = require('url');
-const zlib = require('zlib');
+var util = require('util');
+var crypto = require('crypto');
+var fs = require('fs');
+var path = require('path');
+var url = require('url');
+var zlib = require('zlib');
 
 // Npm.
-const knox = require('knox');
-const mime = require('mime');
-const deferred = require('underscore.deferred');
+var knox = require('knox');
+var mime = require('mime');
+var deferred = require('underscore.deferred');
 var Tempfile = require('temporary/lib/file');
 
 // Local
-const common = require('./common');
+var common = require('./common');
 
 // Avoid warnings.
-const existsSync = ('existsSync' in fs) ? fs.existsSync : path.existsSync;
+var existsSync = ('existsSync' in fs) ? fs.existsSync : path.existsSync;
 
 /**
  * Success/error messages.
  */
-const MSG_UPLOAD_SUCCESS = '↗'.blue + ' Uploaded: %s (%s)';
-const MSG_DOWNLOAD_SUCCESS = '↙'.yellow + ' Downloaded: %s (%s)';
-const MSG_DELETE_SUCCESS = '✗'.red + ' Deleted: %s';
-const MSG_COPY_SUCCESS = '→'.cyan + ' Copied: %s to %s';
+var MSG_UPLOAD_SUCCESS = '↗'.blue + ' Uploaded: %s (%s)';
+var MSG_DOWNLOAD_SUCCESS = '↙'.yellow + ' Downloaded: %s (%s)';
+var MSG_DELETE_SUCCESS = '✗'.red + ' Deleted: %s';
+var MSG_COPY_SUCCESS = '→'.cyan + ' Copied: %s to %s';
 
-const MSG_UPLOAD_DEBUG = '↗'.blue + ' Upload: ' + '%s'.grey + ' to ' + '%s:%s'.cyan;
-const MSG_DOWNLOAD_DEBUG = '↙'.yellow + ' Download: ' + '%s:%s'.cyan + ' to ' + '%s'.grey;
-const MSG_DELETE_DEBUG = '✗'.red + ' Delete: ' + '%s:%s'.cyan;
-const MSG_COPY_DEBUG = '→'.cyan + ' Copy: ' + '%s'.cyan + ' to ' + '%s:%s'.cyan;
+var MSG_UPLOAD_DEBUG = '↗'.blue + ' Upload: ' + '%s'.grey + ' to ' + '%s:%s'.cyan;
+var MSG_DOWNLOAD_DEBUG = '↙'.yellow + ' Download: ' + '%s:%s'.cyan + ' to ' + '%s'.grey;
+var MSG_DELETE_DEBUG = '✗'.red + ' Delete: ' + '%s:%s'.cyan;
+var MSG_COPY_DEBUG = '→'.cyan + ' Copy: ' + '%s'.cyan + ' to ' + '%s:%s'.cyan;
 
-const MSG_ERR_NOT_FOUND = '¯\\_(ツ)_/¯ File not found: %s';
-const MSG_ERR_UPLOAD = 'Upload error: %s (%s)';
-const MSG_ERR_DOWNLOAD = 'Download error: %s (%s)';
-const MSG_ERR_DELETE = 'Delete error: %s (%s)';
-const MSG_ERR_COPY = 'Copy error: %s to %s';
-const MSG_ERR_CHECKSUM = '%s error: expected hash: %s but found %s for %s';
+var MSG_ERR_NOT_FOUND = '¯\\_(ツ)_/¯ File not found: %s';
+var MSG_ERR_UPLOAD = 'Upload error: %s (%s)';
+var MSG_ERR_DOWNLOAD = 'Download error: %s (%s)';
+var MSG_ERR_DELETE = 'Delete error: %s (%s)';
+var MSG_ERR_COPY = 'Copy error: %s to %s';
+var MSG_ERR_CHECKSUM = '%s error: expected hash: %s but found %s for %s';
 
 exports.init = function (grunt) {
   var async = grunt.util.async;

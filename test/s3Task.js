@@ -89,6 +89,9 @@ module.exports = {
 
     test.equal(uploadFiles.length, 5, 'Has 5 files to be uploaded');
 
+    // Overrides are correct.
+    test.equal(uploadFiles[0].upload.bucket, 'overridden');
+
     // File paths in root
     test.equal(uploadFiles[0].file, path.join(process.cwd(), 'test', 'files', 'a.txt'));
     test.equal(uploadFiles[1].file, path.join(process.cwd(), 'test', 'files', 'b.txt'));

@@ -22,13 +22,16 @@ module.exports = function (grunt) {
       },
       test_options: {
         options: {
-          key: "custom"
+          key: 'custom'
         }
       },
       test_S3Task: {
         upload: [{
           src: path.join(process.cwd(), 'test', 'files', '**', '*.txt'),
-          rel: path.join(process.cwd(), 'test', 'files')
+          rel: path.join(process.cwd(), 'test', 'files'),
+          options: {
+            bucket: 'overridden'
+          }
         }]
       }
     }
