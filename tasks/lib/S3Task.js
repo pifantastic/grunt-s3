@@ -30,6 +30,14 @@ S3Task.prototype = {
       });
     });
 
+    config.sync.forEach(function (sync) {
+      var syncFiles = self._parseUploadFiles(sync, config);
+
+      syncFiles.forEach(function (syncFile) {
+        transfers.push(s3.sync.bind(s3, syncFile.file, syncFile.dest, syncFile.upload));
+      });
+    });
+
     config.download.forEach(function (download) {
       transfers.push(s3.download.bind(s3, download.src, download.dest, _(download).defaults(config)));
     });
@@ -127,6 +135,7 @@ S3Task.prototype = {
       key: process.env.AWS_ACCESS_KEY_ID,
       secret: process.env.AWS_SECRET_ACCESS_KEY,
       debug: false,
+      verify: false,
       maxOperations: 0,
       encodePaths: false
     };
@@ -137,7 +146,8 @@ S3Task.prototype = {
       upload: [],
       download: [],
       del: [],
-      copy: []
+      copy: [],
+      sync: []
     };
 
     // Combine the options and fileActions as the config
