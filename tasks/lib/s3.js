@@ -411,8 +411,7 @@ exports.init = function (grunt) {
         if (res && res.statusCode === 404) {
           upload = exports.upload( src, dest, opts);
           // pass through the dfd state
-          upload.then( dfd.resolve, function() {
-            dfd.reject.call(this,arguments);} );
+          upload.then( dfd.resolve, dfd.reject );
         } 
         else if (!res || err || res.statusCode !== 200 ) {
           dfd.reject(makeError(MSG_ERR_DOWNLOAD, src, err || res.statusCode));
