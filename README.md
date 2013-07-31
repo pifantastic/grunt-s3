@@ -58,14 +58,19 @@ the above values may also be overriden.
 
 ### Example
 
+Template strings in grunt will allow you to easily include values from other files. The below example
+demonstrates loading aws settings from another file, Where grunt-aws.json is just a json key:value file like package.json. (Special thanks to @nanek)
+
+This is **important because you should never check in your S3 credentials to github! Load them from an external file that is outside of the repo.**
+
 ```javascript
 grunt.initConfig({
-
+  aws: grunt.file.readJSON('~/grunt-aws.json'),
   s3: {
     options: {
-      key: 'YOUR KEY',
-      secret: 'YOUR SECRET',
-      bucket: 'my-bucket',
+      key: '<%= aws.key %>',
+      secret: '<%= aws.secret %>',
+      bucket: '<%= aws.bucket %>',
       access: 'public-read'
     },
     dev: {
@@ -141,27 +146,6 @@ Running `grunt s3` using the above config produces the following output:
     Done, without errors.
 
 ### Alternative ways of including your s3 configuration
-
-#### Grunt template strings
-
-(Special thanks to @nanek)
-
-Template strings in grunt will allow you to easily include values from other files. The below example
-demonstrates loading aws settings from another file.
-
-```javascript
-grunt.initConfig({
-  aws: grunt.file.readJSON('grunt-aws.json'),
-  s3: {
-    key: '<%= aws.key %>',
-    secret: '<%= aws.secret %>',
-    bucket: '<%= aws.bucket %>',
-    access: 'public-read'
-  }
-}
-```
-
-Where grunt-aws.json is just a json key:value file like package.json.
 
 #### Environment variables
 
