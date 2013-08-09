@@ -34,7 +34,7 @@ grunt.loadNpmTasks('grunt-s3');
 
 The grunt-s3 task is now a [multi-task](https://github.com/gruntjs/grunt/wiki/Creating-tasks); meaning you can specify different targets for this task to run as.
 
-The following are the default options available to each target.
+A quick reference of options
 
 * **key** - (*string*) An Amazon S3 credentials key
 * **secret** - (*string*) An Amazon S3 credentials secret
@@ -49,11 +49,15 @@ public-read-write`, `authenticated-read`, `bucket-owner-read`, `bucket-owner-ful
 * **gzip** - (*boolean*) If true, uploads will be gzip-encoded.
 * **gzipExclude** - (*array*) Define extensions of files you don't want to run gzip on, an array of strings ie: `['.jpg', '.jpeg', '.png']`.
 * **upload** - (*array*) An array of objects, each object representing a file upload and containing a `src`
-and a `dest`. Any of the above values may also be overriden.
+and a `dest`. Any of the above values may also be overriden. Passing `rel:DIR` will cause the filesnames to be
+expanded so that wild cards are not passed to the source name.
 * **download** - (*array*) An array of objects, each object representing a file download and containing a
 `src` and a `dest`. Any of the above values may also be overriden.
 * **del** - (*array*) An array of objects, each object containing a `src` to delete from s3. Any of
 the above values may also be overriden.
+* **sync** - (*array*) An array of ojects, each oject containing a `src` and `dest`. Default behavior is to 
+only upload new files (that don't exist). Adding `verify:true` forces an MD5 hash and Modified time check prior 
+to overwriting the server files.
 * **debug** - (*boolean*) If true, no transfers with S3 will occur, will print all actions for review by user
 
 ### Example
@@ -66,7 +70,12 @@ grunt.initConfig({
       key: 'YOUR KEY',
       secret: 'YOUR SECRET',
       bucket: 'my-bucket',
-      access: 'public-read'
+      access: 'public-read',
+      headers: {
+        // Two Year cache policy (1000 * 60 * 60 * 24 * 730)
+        "Cache-Control": "max-age=630720000, public",
+        "Expires": new Date(Date.now() + 63072000000).toUTCString()
+      }
     },
     dev: {
       // These options override the defaults
@@ -79,7 +88,7 @@ grunt.initConfig({
         {
           src: 'important_document.txt',
           dest: 'documents/important.txt',
-          gzip: true
+          options: { gzip: true }
         },
         {
           src: 'passwords.txt',
@@ -117,6 +126,28 @@ grunt.initConfig({
         },
         {
           src: 'documents/backup_plan.txt'
+        }
+      ],
+
+      sync: [
+        {
+          // only upload this document if it does not exist already
+          src: 'important_document.txt',
+          dest: 'documents/important.txt',
+          options: { gzip: true }
+        },
+        {
+          // make sure this document is newer than the one on S3 and replace it
+          verify: true,
+          src: 'passwords.txt',
+          dest: 'documents/ignore.txt'
+        },
+        {
+          src: path.join(variable.to.release, "build/cdn/js/**/*.js"),
+          dest: "jsgz",
+          // make sure the wildcard paths are fully expanded in the dest
+          rel: path.join(variable.to.release, "build/cdn/js"),
+          options: { gzip: true }
         }
       ]
     }

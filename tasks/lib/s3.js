@@ -142,7 +142,7 @@ exports.init = function (grunt) {
             }
           });
         }
-      });
+      }).end();
     };
 
     // prepare gzip exclude option
