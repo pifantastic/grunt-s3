@@ -5,7 +5,7 @@ module.exports = function (grunt) {
   grunt.initConfig({
     jshint: ['tasks/**/*.js'],
     nodeunit: {
-      all: ['test/upload.js', 'test/download.js', 'test/s3Task.js']
+      all: ['test/upload.js', 'test/download.js', 'test/s3Task.js', 'test/sync.js']
     },
     clean: [ 's3/'],
     s3: {

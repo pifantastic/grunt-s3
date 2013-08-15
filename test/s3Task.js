@@ -8,8 +8,9 @@ var async = grunt.util.async;
 var _ = grunt.util._;
 _.mixin(deferred);
 
-var s3Config = grunt.config('s3');
-var config = _.extend({}, s3Config.options, s3Config.test_S3Task.options);
+var s3Config = grunt.config("s3")
+  , common = require('./common')
+  , config = common.config;
 
 var makeMockTask = function (taskDef) {
   // A fake grunt task
@@ -35,6 +36,7 @@ var makeMockTask = function (taskDef) {
 };
 
 module.exports = {
+  setUp: common.clean,
   run: function (test) {
     var taskDef = new _.Deferred();
     var asyncCalls = 0;

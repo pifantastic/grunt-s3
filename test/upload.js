@@ -7,10 +7,13 @@ var s3 = require('../tasks/lib/s3').init(grunt);
 var _ = grunt.util._;
 var async = grunt.util.async;
 
-var s3Config = grunt.config("s3"),
-    config = _.extend({}, s3Config.options, s3Config.test.options);
+var s3Config = grunt.config("s3")
+  , common = require('./common')
+  , config = common.config;
 
 module.exports = {
+  setUp: common.clean,
+
   testUpload : function (test) {
     test.expect(2);
 
