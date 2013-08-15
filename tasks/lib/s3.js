@@ -388,87 +388,73 @@ exports.init = function (grunt) {
     }
 
     // Check for the file on s3
-    if( !options.verify ) {
-      client.headFile(dest, function (err, res) {
-        var upload;
+    // verify was truthy, so we need to make sure that this file is actually the file it thinks it is
+    client.headFile( dest, function(err, res) {
+      var upload;
 
-        // If the file was not found, then we should be able to continue with a normal upload procedure
-        if (res && res.statusCode === 404) {
-          upload = exports.upload( src, dest, opts);
-          // pass through the dfd state
-          upload.then( dfd.resolve, dfd.reject );
-        } else if (!res || err || res.statusCode !== 200 ) {
-          dfd.reject(makeError(MSG_ERR_DOWNLOAD, src, err || res.statusCode));
-        } else {
+      // If the file was not found, then we should be able to continue with a normal upload procedure
+      if (res && res.statusCode === 404) {
+        upload = exports.upload( src, dest, opts);
+        // pass through the dfd state
+        upload.then( dfd.resolve, dfd.reject );
+      } 
+      else if (!res || err || res.statusCode !== 200 ) {
+        dfd.reject(makeError(MSG_ERR_DOWNLOAD, src, err || res.statusCode));
+      } 
+      else {
+        // we do not wish to overwrite a file that exists by verifying we have a newer one in place
+        if( !options.verify ) {
           // the file exists so do nothing with that
           dfd.resolve(util.format(MSG_SKIP_SUCCESS, src));
         }
-      }).end();
-    } else {
-      // verify was truthy, so we need to make sure that this file is actually the file it thinks it is
-      client.getFile( dest, function(err, res) {
-        var upload;
 
-        // If the file was not found, then we should be able to continue with a normal upload procedure
-        if (res && res.statusCode === 404) {
-          upload = exports.upload( src, dest, opts);
-          // pass through the dfd state
-          upload.then( dfd.resolve, dfd.reject );
-        } 
-        else if (!res || err || res.statusCode !== 200 ) {
-          dfd.reject(makeError(MSG_ERR_DOWNLOAD, src, err || res.statusCode));
-        } 
-        else {
-          // the file exists so let's check to make sure it's the right file, if not, we'll update it
-          // Read the local file so we can get its md5 hash.
-          fs.readFile(src, function (err, data) {
-            var remoteHash, localHash;
+        // the file exists so let's check to make sure it's the right file, if not, we'll update it
+        // Read the local file so we can get its md5 hash.
+        fs.readFile(src, function (err, data) {
+          var remoteHash, localHash;
 
-            if (err) {
-              dfd.reject(makeError(MSG_ERR_UPLOAD, src, err));
+          if (err) {
+            dfd.reject(makeError(MSG_ERR_UPLOAD, src, err));
+          }
+          else {
+            // The etag head in the response from s3 has double quotes around
+            // it. Strip them out.
+            remoteHash = res.headers.etag.replace(/"/g, '');
+
+            // Get an md5 of the local file so we can verify the upload.
+            localHash = crypto.createHash('md5').update(data).digest('hex');
+
+            if (remoteHash === localHash) {
+              // the file exists and is the same so do nothing with that
+              dfd.resolve(util.format(MSG_SKIP_MATCHES, src));
             }
             else {
-              // The etag head in the response from s3 has double quotes around
-              // it. Strip them out.
-              remoteHash = res.headers.etag.replace(/"/g, '');
+              fs.stat( src, function(err, stats) {
+                var remoteWhen, localWhen, upload;
 
-              // Get an md5 of the local file so we can verify the upload.
-              localHash = crypto.createHash('md5').update(data).digest('hex');
+                if (err) {
+                  dfd.reject(makeError(MSG_ERR_UPLOAD, src, err));
+                } 
+                else {
+                  // which one is newer? if local is newer, we should upload it
+                  remoteWhen = new Date(res.headers['last-modified'] || "0"); // earliest date possible if no header is returned
+                  localWhen = new Date(stats.mtime || "1"); // make second earliest date possible if mtime isn't set
 
-              if (remoteHash === localHash) {
-                // the file exists and is the same so do nothing with that
-                dfd.resolve(util.format(MSG_SKIP_MATCHES, src));
-              }
-              else {
-                fs.stat( src, function(err, stats) {
-                  var remoteWhen, localWhen, upload;
-
-                  if (err) {
-                    dfd.reject(makeError(MSG_ERR_UPLOAD, src, err));
-                  } 
-                  else {
-                    // which one is newer? if local is newer, we should upload it
-                    remoteWhen = new Date(res.headers['last-modified'] || "0"); // earliest date possible if no header is returned
-                    localWhen = new Date(stats.mtime || "1"); // make second earliest date possible if mtime isn't set
-
-                    if( localWhen > remoteWhen ) {
-                      // default is that local is newer, only upload when it is
-                      upload = exports.upload( src, dest, opts);
-                      // pass through the dfd state
-                      upload.then( dfd.resolve, dfd.reject );
-                    } else {
-                      dfd.resolve(util.format(MSG_SKIP_OLDER, src));
-                    }
-
+                  if( localWhen > remoteWhen ) {
+                    // default is that local is newer, only upload when it is
+                    upload = exports.upload( src, dest, opts);
+                    // pass through the dfd state
+                    upload.then( dfd.resolve, dfd.reject );
+                  } else {
+                    dfd.resolve(util.format(MSG_SKIP_OLDER, src));
                   }
-                });
-              }
+                }
+              });
             }
-          });
-        }
-      }).end();
-
-    }
+          }
+        });
+      }
+    }).end();
 
     return dfd.promise();
   };
