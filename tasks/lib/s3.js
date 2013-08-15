@@ -406,7 +406,7 @@ exports.init = function (grunt) {
       }).end();
     } else {
       // verify was truthy, so we need to make sure that this file is actually the file it thinks it is
-      client.getFile( dest, function(err, res) {
+      client.headFile( dest, function(err, res) {
         var upload;
 
         // If the file was not found, then we should be able to continue with a normal upload procedure
