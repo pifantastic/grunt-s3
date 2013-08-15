@@ -13,7 +13,7 @@ module.exports = {
     test.expect(1);
 
     var dest = __dirname + '/files/a.txt';
-    var src = __dirname + '/../s3/127/a.txt/.fakes3_metadataFFF/content';
+    var src = __dirname + '/../s3/127/test/a.txt/.fakes3_metadataFFF/content';
 
     s3.download('a.txt', dest, config)
       .done(function () {
@@ -28,7 +28,7 @@ module.exports = {
     test.expect(1);
 
     var dest = __dirname + '/files/b.txt.debug';
-    var src = __dirname + '/../s3/127/b.txt/.fakes3_metadataFFF/content';
+    var src = __dirname + '/../s3/127/test/b.txt/.fakes3_metadataFFF/content';
 
     var debugConfig = _.defaults({}, config, {debug: true});
 
