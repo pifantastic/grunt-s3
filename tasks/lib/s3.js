@@ -74,13 +74,9 @@ exports.init = function (grunt) {
     var options = _.clone(opts || {}, true);
 
     options = _.pick(options, [
-      'region', 'endpoint', 'port', 'key', 'secret', 'access', 'bucket', 'secure', 'headers', 'debug'
+      'region', 'endpoint', 'port', 'key', 'secret', 'access', 'bucket', 'secure', 'headers', 'debug', 'style'
     ]);
-
-    _.defaults(options, {
-      'style': 'path'
-    });
-
+    
     return options;
   };
 
