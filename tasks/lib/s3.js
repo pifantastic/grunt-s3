@@ -70,6 +70,20 @@ exports.init = function (grunt) {
     return new Error(msg);
   };
 
+  var makeOptions = exports.makeOptions = function(opts) {
+    var options = _.clone(opts || {}, true);
+
+    options = _.pick(options, [
+      'region', 'endpoint', 'port', 'key', 'secret', 'access', 'bucket', 'secure', 'headers', 'debug'
+    ]);
+
+    _.defaults(options, {
+      'style': 'path'
+    });
+
+    return options;
+  };
+
   /**
    * Publishes the local file at src to the s3 dest.
    *
@@ -84,7 +98,7 @@ exports.init = function (grunt) {
    */
   exports.put = exports.upload = function (src, dest, opts) {
     var dfd = new _.Deferred();
-    var options = _.clone(opts, true);
+    var options = makeOptions(opts);
 
     // Make sure the local file exists.
     if (!existsSync(src)) {
@@ -98,9 +112,7 @@ exports.init = function (grunt) {
     }
 
     // Pick out the configuration options we need for the client.
-    var client = knox.createClient(_(options).pick([
-      'region', 'endpoint', 'port', 'key', 'secret', 'access', 'bucket', 'secure'
-    ]));
+    var client = knox.createClient(options);
 
     if (options.debug) {
       return dfd.resolve(util.format(MSG_UPLOAD_DEBUG, path.relative(process.cwd(), src), client.bucket, dest)).promise();
@@ -216,12 +228,10 @@ exports.init = function (grunt) {
    */
   exports.pull = exports.download = function (src, dest, opts) {
     var dfd = new _.Deferred();
-    var options = _.clone(opts);
+    var options = makeOptions(opts);
 
     // Pick out the configuration options we need for the client.
-    var client = knox.createClient(_(options).pick([
-      'region', 'endpoint', 'port', 'key', 'secret', 'access', 'bucket'
-    ]));
+    var client = knox.createClient(options);
 
     if (options.debug) {
       return dfd.resolve(util.format(MSG_DOWNLOAD_DEBUG, client.bucket, src, path.relative(process.cwd(), dest))).promise();
@@ -288,12 +298,10 @@ exports.init = function (grunt) {
    */
   exports.copy = function (src, dest, opts) {
     var dfd = new _.Deferred();
-    var options = _.clone(opts);
+    var options = makeOptions(opts);
 
     // Pick out the configuration options we need for the client.
-    var client = knox.createClient(_(options).pick([
-      'region', 'endpoint', 'port', 'key', 'secret', 'access', 'bucket'
-    ]));
+    var client = knox.createClient(options);
 
     if (options.debug) {
       return dfd.resolve(util.format(MSG_COPY_DEBUG, src, client.bucket, dest)).promise();
@@ -334,12 +342,10 @@ exports.init = function (grunt) {
    */
   exports.del = function (src, opts) {
     var dfd = new _.Deferred();
-    var options = _.clone(opts);
+    var options = makeOptions(opts);
 
     // Pick out the configuration options we need for the client.
-    var client = knox.createClient(_(options).pick([
-      'region', 'endpoint', 'port', 'key', 'secret', 'access', 'bucket'
-    ]));
+    var client = knox.createClient(options);
 
     if (options.debug) {
       return dfd.resolve(util.format(MSG_DELETE_DEBUG, client.bucket, src)).promise();
@@ -374,12 +380,10 @@ exports.init = function (grunt) {
    */
   exports.sync = function (src, dest, opts) {
     var dfd = new _.Deferred();
-    var options = _.clone(opts);
+    var options = makeOptions(opts);
 
     // Pick out the configuration options we need for the client.
-    var client = knox.createClient(_(options).pick([
-      'region', 'endpoint', 'port', 'key', 'secret', 'access', 'bucket'
-    ]));
+    var client = knox.createClient(options);
 
     if (options.debug) {
       return dfd.resolve(util.format(MSG_SKIP_DEBUG, client.bucket, src)).promise();

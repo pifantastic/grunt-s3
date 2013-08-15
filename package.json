@@ -1,4 +1,4 @@
-  {
+{
   "name": "grunt-s3",
   "description": "A grunt task to automate moving files to/from Amazon S3.",
   "version": "0.2.0-alpha.2",
@@ -20,7 +20,8 @@
   "main": "tasks/s3",
   "bin": "bin/grunt-s3",
   "scripts": {
-    "test": "grunt test"
+    "test": "grunt test",
+    "fakes3": "fakes3 -r s3 -p 1337"
   },
   "engines": {
     "node": ">= 0.8.0"
@@ -41,6 +42,7 @@
     "nodeunit": "~0.7.4",
     "grunt-contrib-jshint": "~0.1.0",
     "grunt-contrib-nodeunit": "~0.1.1",
-    "libyaml": "~0.2.1"
+    "libyaml": "~0.2.1",
+    "grunt-contrib-clean": "~0.5.0"
   }
 }
