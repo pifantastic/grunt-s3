@@ -76,7 +76,7 @@ exports.init = function (grunt) {
     return options;
   };
 
-  var makeClient = function(options) {
+  var makeClient = exports.makeClient = function(options) {
     return knox.createClient(_.pick(options, [
       'region', 'endpoint', 'port', 'key', 'secret', 'access', 'bucket', 'secure', 'headers', 'style'
     ]));
