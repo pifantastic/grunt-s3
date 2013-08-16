@@ -76,6 +76,12 @@ exports.init = function (grunt) {
     return options;
   };
 
+  /**
+   * Create an s3 client. Returns an Knox instance.
+   *
+   * @param {Object} Format.
+   * @returns {Object}
+   */
   var makeClient = exports.makeClient = function(options) {
     return knox.createClient(_.pick(options, [
       'region', 'endpoint', 'port', 'key', 'secret', 'access', 'bucket', 'secure', 'headers', 'style'
