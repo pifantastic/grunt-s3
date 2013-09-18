@@ -85,10 +85,11 @@ exports.init = function (grunt) {
   exports.put = exports.upload = function (src, dest, opts) {
     var dfd = new _.Deferred();
     var options = _.clone(opts, true);
+    var prettySrc = path.relative(process.cwd(), src);
 
     // Make sure the local file exists.
     if (!existsSync(src)) {
-      return dfd.reject(makeError(MSG_ERR_NOT_FOUND, src));
+      return dfd.reject(makeError(MSG_ERR_NOT_FOUND, prettySrc));
     }
 
     var headers = options.headers || {};
@@ -103,7 +104,7 @@ exports.init = function (grunt) {
     ]));
 
     if (options.debug) {
-      return dfd.resolve(util.format(MSG_UPLOAD_DEBUG, path.relative(process.cwd(), src), client.bucket, dest)).promise();
+      return dfd.resolve(util.format(MSG_UPLOAD_DEBUG, prettySrc, client.bucket, dest)).promise();
     }
 
     // Encapsulate this logic to make it easier to gzip the file first if
@@ -116,13 +117,13 @@ exports.init = function (grunt) {
         // If there was an upload error or any status other than a 200, we
         // can assume something went wrong.
         if (err || res.statusCode !== 200) {
-          cb(makeError(MSG_ERR_UPLOAD, src, err || res.statusCode));
+          cb(makeError(MSG_ERR_UPLOAD, prettySrc, err || res.statusCode));
         }
         else {
           // Read the local file so we can get its md5 hash.
           fs.readFile(src, function (err, data) {
             if (err) {
-              cb(makeError(MSG_ERR_UPLOAD, src, err));
+              cb(makeError(MSG_ERR_UPLOAD, prettySrc, err));
             }
             else {
               // The etag head in the response from s3 has double quotes around
@@ -133,11 +134,11 @@ exports.init = function (grunt) {
               var localHash = crypto.createHash('md5').update(data).digest('hex');
 
               if (remoteHash === localHash) {
-                var msg = util.format(MSG_UPLOAD_SUCCESS, src, localHash);
+                var msg = util.format(MSG_UPLOAD_SUCCESS, prettySrc, localHash);
                 cb(null, msg);
               }
               else {
-                cb(makeError(MSG_ERR_CHECKSUM, 'Upload', localHash, remoteHash, src));
+                cb(makeError(MSG_ERR_CHECKSUM, 'Upload', localHash, remoteHash, prettySrc));
               }
             }
           });
@@ -174,6 +175,7 @@ exports.init = function (grunt) {
         .on('close', function () {
           // Update the src to point to the newly created .gz file.
           src = tmp.path;
+          prettySrc += ' (gzip)';
           upload(function (err, msg) {
             // Clean up the temp file.
             tmp.unlinkSync();
@@ -412,10 +414,10 @@ exports.init = function (grunt) {
           upload = exports.upload( src, dest, opts);
           // pass through the dfd state
           upload.then( dfd.resolve, dfd.reject );
-        } 
+        }
         else if (!res || err || res.statusCode !== 200 ) {
           dfd.reject(makeError(MSG_ERR_DOWNLOAD, src, err || res.statusCode));
-        } 
+        }
         else {
           // the file exists so let's check to make sure it's the right file, if not, we'll update it
           // Read the local file so we can get its md5 hash.
@@ -443,7 +445,7 @@ exports.init = function (grunt) {
 
                   if (err) {
                     dfd.reject(makeError(MSG_ERR_UPLOAD, src, err));
-                  } 
+                  }
                   else {
                     // which one is newer? if local is newer, we should upload it
                     remoteWhen = new Date(res.headers['last-modified'] || "0"); // earliest date possible if no header is returned
