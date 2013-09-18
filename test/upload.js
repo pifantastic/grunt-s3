@@ -7,17 +7,20 @@ var s3 = require('../tasks/lib/s3').init(grunt);
 var _ = grunt.util._;
 var async = grunt.util.async;
 
-var s3Config = grunt.config("s3"),
-    config = _.extend({}, s3Config.options, s3Config.test.options);
+var s3Config = grunt.config("s3")
+  , common = require('./common')
+  , config = common.config;
 
 module.exports = {
+  setUp: common.clean,
+
   testUpload : function (test) {
     test.expect(2);
 
-    async.waterfall([
+    async.series([
       function (cb) {
         var src = __dirname + '/files/a.txt';
-        var dest = __dirname + '/../s3/127/a.txt/.fakes3_metadataFFF/content';
+        var dest = __dirname + '/../s3/127/test/a.txt/.fakes3_metadataFFF/content';
 
         s3.upload(src, 'a.txt', config)
           .done(function () {
@@ -36,38 +39,34 @@ module.exports = {
             cb(null);
           });
       }
-    ], function () {
-      test.done();
-    });
+    ], test.done);
   },
 
   testUploadWithHeaders : function (test) {
     test.expect(1);
 
-    async.waterfall([
+    async.series([
       function (cb) {
         var src = __dirname + '/files/b.txt';
-        var dest = __dirname + '/../s3/127/b.txt/.fakes3_metadataFFF/metadata';
+        var dest = __dirname + '/../s3/127/test/b.txt/.fakes3_metadataFFF/metadata';
 
         var headerConfig = _.defaults({}, config, { headers : {'Content-Type' : '<3'} });
 
         s3.upload(src, 'b.txt', headerConfig)
           .always(function () {
-            var meta = yaml.parse(grunt.file.read(dest))
+            var meta = yaml.parse(grunt.file.read(dest));
             test.ok(meta[0][':content_type'] === new Buffer('<3').toString('base64'), 'Headers are preserved.');
             cb(null);
           });
       }
-    ], function () {
-      test.done();
-    });
+    ], test.done);
   },
 
   testUploadDebug : function (test) {
     test.expect(1);
 
     var src = __dirname + '/files/c.txt';
-    var dest = __dirname + '/../s3/127/c.txt/.fakes3_metadataFFF/content';
+    var dest = __dirname + '/../s3/127/test/c.txt/.fakes3_metadataFFF/content';
 
     var debugConfig = _.defaults({}, config, { debug: true });
 
