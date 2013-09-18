@@ -187,7 +187,7 @@ exports.init = function (grunt) {
       // Gzip the file and upload when done.
       input.pipe(zlib.createGzip()).pipe(output)
         .on('error', function (err) {
-          dfd.reject(makeError(MSG_ERR_UPLOAD, src, err));
+          dfd.reject(makeError(MSG_ERR_UPLOAD, prettySrc, err));
         })
         .on('close', function () {
           // Update the src to point to the newly created .gz file.
