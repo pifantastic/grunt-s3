@@ -1,7 +1,7 @@
 {
   "name": "grunt-s3",
   "description": "A grunt task to automate moving files to/from Amazon S3.",
-  "version": "0.2.0-alpha.2",
+  "version": "0.2.0-alpha.3",
   "author": "Aaron Forsander (https://github.com/pifantastic)",
   "homepage": "https://github.com/pifantastic/grunt-s3",
   "repository": {
