@@ -100,8 +100,10 @@ grunt.initConfig({
           dest: 'documents/ignore.txt',
 
           // These values will override the above settings.
-          bucket: 'some-specific-bucket',
-          access: 'authenticated-read'
+          options: {
+            bucket: 'some-specific-bucket',
+            access: 'authenticated-read'
+          }
         },
         {
           // Wildcards are valid *for uploads only* until I figure out a good implementation
@@ -143,7 +145,7 @@ grunt.initConfig({
         },
         {
           // make sure this document is newer than the one on S3 and replace it
-          verify: true,
+          options: { verify: true },
           src: 'passwords.txt',
           dest: 'documents/ignore.txt'
         },
