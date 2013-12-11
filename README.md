@@ -63,6 +63,8 @@ the above values may also be overriden.
 only upload new files (that don't exist). Adding `verify:true` forces an MD5 hash and Modified time check prior
 to overwriting the server files.
 * **debug** - (*boolean*) If true, no transfers with S3 will occur, will print all actions for review by user
+* **logSuccess** - (*boolean*) If false, output for successful transfers will be ignored. Default: true
+* **logErrors** - (*boolean*) If false, output for failed transfers will be ignored. Default: true
 
 
 ### Example

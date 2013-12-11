@@ -132,6 +132,8 @@ module.exports = {
     test.equal(config.key, s3Config.options.key, 'Key');
     test.equal(config.secret, s3Config.options.secret, 'Secret');
     test.equal(config.debug, false, 'Debug');
+    test.equal(config.logSuccess, true, 'Log success');
+    test.equal(config.logErrors, true, 'Log errors');
 
     // Test the data actions
     test.equal(config.upload.length, 1, 'Upload length');
