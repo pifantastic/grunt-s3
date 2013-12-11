@@ -49,8 +49,12 @@ public-read-write`, `authenticated-read`, `bucket-owner-read`, `bucket-owner-ful
 * **gzip** - (*boolean*) If true, uploads will be gzip-encoded.
 * **gzipExclude** - (*array*) Define extensions of files you don't want to run gzip on, an array of strings ie: `['.jpg', '.jpeg', '.png']`.
 * **upload** - (*array*) An array of objects, each object representing a file upload and containing a `src`
-and a `dest`. Any of the above values may also be overriden. Passing `rel:DIR` will cause the filesnames to be
-expanded so that wild cards are not passed to the source name.
+and a `dest`. Any of the above values may also be overriden.
+
+	Passing `rel:DIR` will:
+	- Cause the filenames to be expanded relative to some relative or absolute path on the 	filesystem (`DIR`). This operation is exclusive of `DIR`, i.e., `DIR` itself will not be 	included in the expansion.
+	- Cause wildcards in 'src' to be replaced with actual paths and/or filenames.
+
 * **download** - (*array*) An array of objects, each object representing a file download and containing a
 `src` and a `dest`. Any of the above values may also be overriden.
 * **del** - (*array*) An array of objects, each object containing a `src` to delete from s3. Any of
@@ -59,6 +63,7 @@ the above values may also be overriden.
 only upload new files (that don't exist). Adding `verify:true` forces an MD5 hash and Modified time check prior
 to overwriting the server files.
 * **debug** - (*boolean*) If true, no transfers with S3 will occur, will print all actions for review by user
+
 
 ### Example
 
