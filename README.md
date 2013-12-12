@@ -59,9 +59,7 @@ and a `dest`. Any of the above values may also be overriden.
 `src` and a `dest`. Any of the above values may also be overriden.
 * **del** - (*array*) An array of objects, each object containing a `src` to delete from s3. Any of
 the above values may also be overriden.
-* **sync** - (*array*) An array of ojects, each oject containing a `src` and `dest`. Default behavior is to
-only upload new files (that don't exist). Adding `verify:true` forces an MD5 hash and Modified time check prior
-to overwriting the server files.
+* **sync** - (*array*) An array of ojects, each oject containing a `src` and `dest`. Default behavior is to only upload new files (that don't exist). Set a key called `verify` with the value `true` on this object's options property (i.e. `options: {verify: true}`) to upload existing files if and only if they are newer than the versions of those same files on the server. This is implemented via an MD5 hash and by checking the modified times of the files.
 * **debug** - (*boolean*) If true, no transfers with S3 will occur, will print all actions for review by user
 * **logSuccess** - (*boolean*) If false, output for successful transfers will be ignored. Default: true
 * **logErrors** - (*boolean*) If false, output for failed transfers will be ignored. Default: true
