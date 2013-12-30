@@ -110,7 +110,7 @@ exports.init = function (grunt) {
       return dfd.reject(makeError(MSG_ERR_NOT_FOUND, prettySrc));
     }
 
-    var headers = options.headers || {};
+    var headers = _.clone(options.headers || {});
 
     if (options.access) {
       headers['x-amz-acl'] = options.access;
