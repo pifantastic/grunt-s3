@@ -28,7 +28,7 @@ var existsSync = ('existsSync' in fs) ? fs.existsSync : path.existsSync;
 /**
  * Success/error messages.
  */
-var MSG_UPLOAD_SUCCESS = '↗'.blue + ' Uploaded: %s (%s)';
+var MSG_UPLOAD_SUCCESS = '↗'.blue + ' Uploaded: %s to %s:%s (%s)';
 var MSG_DOWNLOAD_SUCCESS = '↙'.yellow + ' Downloaded: %s (%s)';
 var MSG_DELETE_SUCCESS = '✗'.red + ' Deleted: %s';
 var MSG_COPY_SUCCESS = '→'.cyan + ' Copied: %s to %s';
@@ -150,7 +150,7 @@ exports.init = function (grunt) {
               var localHash = crypto.createHash('md5').update(data).digest('hex');
 
               if (remoteHash === localHash) {
-                var msg = util.format(MSG_UPLOAD_SUCCESS, prettySrc, localHash);
+                var msg = util.format(MSG_UPLOAD_SUCCESS, prettySrc, client.bucket, dest, localHash);
                 cb(null, msg);
               }
               else {
