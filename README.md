@@ -40,7 +40,7 @@ A quick reference of options
 * **secret** - (*string*) An Amazon S3 credentials secret
 * **bucket** - (*string*) An Amazon S3 bucket
 * **region** - (*string*) An Amazon AWS region (see http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region)
-* **maxOperations** - (*number*) max number of concurrent transfers - if not specified or set to 0, will be unlimited.
+* **maxOperations** - (*number*) max number of concurrent transfers - if set to 0, will be unlimited. Default: 20
 * **encodePaths** - (*boolean*) if set to true, will encode the uris of destinations to prevent 505 errors. Default: false
 * **headers** - (*object*) An object containing any headers you would like to send along with the
 transfers i.e. `{ 'X-Awesomeness': 'Out-Of-This-World', 'X-Stuff': 'And Things!' }`
