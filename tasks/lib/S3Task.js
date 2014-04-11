@@ -140,7 +140,7 @@ S3Task.prototype = {
       secret: process.env.AWS_SECRET_ACCESS_KEY,
       debug: false,
       verify: false,
-      maxOperations: 0,
+      maxOperations: 20,
       encodePaths: false,
       logSuccess: true,
       logErrors: true
