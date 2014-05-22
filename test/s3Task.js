@@ -143,7 +143,7 @@ module.exports = {
     test.equal(config.endpoint, s3Config.options.endpoint, 'Endpoint');
 
     // Newly added options
-    test.equal(config.maxOperations, 0, 'Defaults max operations to 0');
+    test.equal(config.maxOperations, 20, 'Defaults max operations to 20');
     test.equal(config.encodePaths, false, 'Defaults encodePaths to false');
 
     // Be a good citizen and reset these.
