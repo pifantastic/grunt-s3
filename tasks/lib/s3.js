@@ -247,7 +247,7 @@ exports.init = function (grunt) {
     // Create a local stream we can write the downloaded file to.
     var file = fs.createWriteStream(dest);
 
-    // Upload the file to s3.
+    // Download the file from s3.
     client.getFile(src, function (err, res) {
       // If there was an upload error or any status other than a 200, we
       // can assume something went wrong.
@@ -255,38 +255,34 @@ exports.init = function (grunt) {
         return dfd.reject(makeError(MSG_ERR_DOWNLOAD, src, err || res.statusCode));
       }
 
+      var hash = crypto.createHash('md5');
       res
         .on('data', function (chunk) {
           file.write(chunk);
+          // Build the hash as it downloads.
+          hash.update(chunk);
         })
         .on('error', function (err) {
           return dfd.reject(makeError(MSG_ERR_DOWNLOAD, src, err));
         })
         .on('end', function () {
-          file.end();
+            file.end();
 
-          // Read the local file so we can get its md5 hash.
-          fs.readFile(dest, function (err, data) {
-            if (err) {
-              return dfd.reject(makeError(MSG_ERR_DOWNLOAD, src, err));
-            }
-            else {
-              // The etag head in the response from s3 has double quotes around
-              // it. Strip them out.
-              var remoteHash = res.headers.etag.replace(/"/g, '');
+            // The etag head in the response from s3 has double quotes around
+            // it. Strip them out.
+            var remoteHash = res.headers.etag.replace(/"/g, '');
 
-              // Get an md5 of the local file so we can verify the download.
-              var localHash = crypto.createHash('md5').update(data).digest('hex');
+            // Get an md5 of the local file so we can verify the download.
+            var localHash = hash.digest('hex');
 
-              if (remoteHash === localHash) {
+            if (remoteHash === localHash) {
                 var msg = util.format(MSG_DOWNLOAD_SUCCESS, src, localHash);
                 dfd.resolve(msg);
-              }
-              else {
-                dfd.reject(makeError(MSG_ERR_CHECKSUM, 'Download', localHash, remoteHash, src));
-              }
             }
-          });
+            else {
+                dfd.reject(makeError(MSG_ERR_CHECKSUM, 'Download', localHash, remoteHash, src));
+            }
+
         });
     });
 
