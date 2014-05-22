@@ -263,29 +263,29 @@ exports.init = function (grunt) {
           return dfd.reject(makeError(MSG_ERR_DOWNLOAD, src, err));
         })
         .on('end', function () {
-          file.end();
+          file.end(function() {
+              // Read the local file so we can get its md5 hash.
+              fs.readFile(dest, function (err, data) {
+                if (err) {
+                  return dfd.reject(makeError(MSG_ERR_DOWNLOAD, src, err));
+                }
+                else {
+                  // The etag head in the response from s3 has double quotes around
+                  // it. Strip them out.
+                  var remoteHash = res.headers.etag.replace(/"/g, '');
 
-          // Read the local file so we can get its md5 hash.
-          fs.readFile(dest, function (err, data) {
-            if (err) {
-              return dfd.reject(makeError(MSG_ERR_DOWNLOAD, src, err));
-            }
-            else {
-              // The etag head in the response from s3 has double quotes around
-              // it. Strip them out.
-              var remoteHash = res.headers.etag.replace(/"/g, '');
+                  // Get an md5 of the local file so we can verify the download.
+                  var localHash = crypto.createHash('md5').update(data).digest('hex');
 
-              // Get an md5 of the local file so we can verify the download.
-              var localHash = crypto.createHash('md5').update(data).digest('hex');
-
-              if (remoteHash === localHash) {
-                var msg = util.format(MSG_DOWNLOAD_SUCCESS, src, localHash);
-                dfd.resolve(msg);
-              }
-              else {
-                dfd.reject(makeError(MSG_ERR_CHECKSUM, 'Download', localHash, remoteHash, src));
-              }
-            }
+                  if (remoteHash === localHash) {
+                    var msg = util.format(MSG_DOWNLOAD_SUCCESS, src, localHash);
+                    dfd.resolve(msg);
+                  }
+                  else {
+                    dfd.reject(makeError(MSG_ERR_CHECKSUM, 'Download', localHash, remoteHash, src));
+                  }
+                }
+              });
           });
         });
     });
