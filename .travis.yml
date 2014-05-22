@@ -1,10 +1,17 @@
 language: node_js
 node_js:
   - 0.8
+  - 0.10
 before_install:
   - which ruby
   - ruby --version
   - gem install fakes3
+  # https://twitter.com/_munter_/status/465621408396365824
+  # When using `npm install --save` in node 0.8 tested projects on @travisci, do
+  # before_install: "npm install -g npm" in .travis.yml #outdated
+  #
+  # Retweeted by @travisci
+  - npm install -g npm
   - npm install -g grunt-cli
 before_script:
   - fakes3 -r s3 -p 1337 &
