@@ -87,7 +87,13 @@ S3Task.prototype = {
 
     return _.map(files, function (file) {
       file = path.resolve(file);
-      upload.src = path.resolve(grunt.template.process(upload.src));
+
+      // We only want to try and resolve/template-process the original wildcard
+      // if it is actually a string. Otherwise, it's a more complex input that
+      // grunt.file.expand accepts, so leave it be.
+      if (typeof upload.src === 'string') {
+        upload.src = path.resolve(grunt.template.process(upload.src));
+      }
 
       // Put the key, secret and bucket information into the upload for knox.
       var fileConfig = _.extend({}, config, upload.options || {});
