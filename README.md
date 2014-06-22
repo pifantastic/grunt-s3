@@ -30,6 +30,45 @@ Then add this line to your project's `Gruntfile.js`:
 grunt.loadNpmTasks('grunt-s3');
 ```
 
+##S3 User Setup
+
+Log into your AWS Console and go to the Users management console. Click the Create New Users button and enter a username.
+
+###Credentials File
+
+Have AWS create a new key pair for the user and copy the contents into a grunt-aws.json file in your home directory.
+
+```javascript
+{ 
+    "key": "PUBLIC_KEY", 
+    "secret": "SECRET_KEY", 
+    "bucket": "BUCKET_NAME" 
+}
+```
+
+###User Permissions
+
+From the AWS IAM Users Console select the newly created user, then the Permissions Tab, then click the Attach User Policy button. Paste in the following (substituting BUCKET_NAME as appropriate).
+
+```javascript
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Action": [
+        "s3:*"
+      ],
+      "Sid": "AllowNewUserAccessToMyBucket",
+      "Resource": [
+        "arn:aws:s3:::BUCKET-NAME",
+        "arn:aws:s3:::BUCKET-NAME/*"
+      ],
+      "Effect": "Allow"
+    }
+  ]
+}
+```
+
 ## Options
 
 The grunt-s3 task is now a [multi-task](https://github.com/gruntjs/grunt/wiki/Creating-tasks); meaning you can specify different targets for this task to run as.
