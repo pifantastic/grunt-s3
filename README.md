@@ -1,3 +1,17 @@
+# UNMAINTAINED!
+
+I wrote this plugin a long time ago back in the pre grunt 0.4.0 days! I think it
+has only really lived on this long because of the nice, succinct name.
+
+I do not maintain this plugin anymore. It doesn't really behave the way modern
+grunt plugins behave. It has this stupid `rel` option that everybody needs but
+nobody knows about. I urge you to use a better plugin! Here is a list of
+alternatives:
+
+* https://github.com/MathieuLoutre/grunt-aws-s3
+* https://github.com/jpillora/grunt-aws
+
+
 [![Build Status](https://secure.travis-ci.org/pifantastic/grunt-s3.png?branch=master)](https://travis-ci.org/pifantastic/grunt-s3)
 
 *NOTE*: This is the README for `grunt-s3` `v0.2.0-alpha`. For `v0.1.0`, [go here](https://github.com/pifantastic/grunt-s3/blob/0.1.X/README.md).
